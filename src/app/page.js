@@ -312,7 +312,6 @@ export default function OneDeskDashboard() {
 
       {role === 'officer' && (
         <div className="space-y-4 mb-6">
-          {/* SEARCH WITH DROPDOWN OPTIONS */}
           <div className="relative bg-white p-3.5 rounded-xl border border-stone-200 shadow-sm">
             <div className="flex items-center gap-3">
               <Search className="w-4 h-4 text-stone-400 shrink-0" />
@@ -333,7 +332,6 @@ export default function OneDeskDashboard() {
               )}
             </div>
 
-            {/* AUTOCOMPLETE DROPDOWN */}
             {showDropdown && (
               <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-stone-200 rounded-xl shadow-lg z-50 overflow-hidden max-h-48 overflow-y-auto">
                 <div className="p-2 text-[10px] uppercase tracking-wider font-bold text-stone-400 bg-stone-50 border-b border-stone-100">
@@ -392,7 +390,7 @@ export default function OneDeskDashboard() {
 
       {role === 'student' ? (
         <div className="max-w-2xl mx-auto bg-white p-6 rounded-xl border border-stone-200 shadow-sm">
-          <h2 className="text-base font-bold text-stone-900 mb-1">Lodge Official Student Grievance</h2>
+          <h2 className="text-base font-bold text-stone-900 mb-1">Submit Student Grievance Portal</h2>
           <p className="text-xs text-stone-500 mb-6">Submissions directly audited by AICTE Bureau & Institution Panel.</p>
 
           {aiAlert && (
