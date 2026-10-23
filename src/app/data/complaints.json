@@ -1,0 +1,37 @@
+[
+  {
+    "id": "CNT-2026-0101",
+    "institutionId": "1-10928374",
+    "institutionName": "Indore Institute of Science & Technology",
+    "department": "Regulation Bureau",
+    "category": "Fee Exceeding AICTE Norms",
+    "description": "College is charging extra development fee of Rs. 25,000 without official AICTE approval.",
+    "status": "In Progress",
+    "priority": "HIGH",
+    "isDuplicate": false,
+    "deadline": "2026-10-28",
+    "timeline": [
+      { "date": "2026-10-18", "action": "Complaint Registered by Student", "actor": "System" },
+      { "date": "2026-10-19", "action": "Assigned to Regulation Bureau", "actor": "AI Router" }
+    ]
+  },
+  {
+    "id": "CNT-2026-0102",
+    "institutionId": "1-10928374",
+    "institutionName": "Indore Institute of Science & Technology",
+    "department": "Public Grievances",
+    "category": "Unapproved Charges",
+    "description": "Institute management forcing students to pay additional 25k charges not listed in official fee structure.",
+    "status": "Pending",
+    "priority": "HIGH",
+    "isDuplicate": true,
+    "matchedCaseId": "CNT-2026-0101",
+    "similarityScore": "88%",
+    "aiReason": "Both complaints allege unapproved development/tuition fee collection for Institution ID: 1-10928374.",
+    "deadline": "2026-10-25",
+    "timeline": [
+      { "date": "2026-10-21", "action": "Complaint Registered", "actor": "Student" },
+      { "date": "2026-10-21", "action": "Flagged as Potential Duplicate by AI Engine", "actor": "AI CTE OneDesk Engine" }
+    ]
+  }
+]
