@@ -1,13 +1,75 @@
 'use client';
 import React, { useState } from 'react';
-import initialComplaints from './data/complaints.json';
 import { calculateSemanticOverlap } from './utils/aiEngine';
-import { Shield, Filter, Send, CheckCircle, Clock, FileText, Lock, UserCheck, Building2, User, Key, LogOut, Search, AlertCircle } from 'lucide-react';
+import { Shield, Filter, Send, CheckCircle, Clock, FileText, Lock, UserCheck, Building2, User, Key, LogOut, Search, AlertCircle, ChevronDown } from 'lucide-react';
+
+const collegesList = [
+  { pid: "12345", name: "Apex Institute of Technology" },
+  { pid: "54321", name: "Indore College of Engineering & Tech" },
+  { pid: "99887", name: "Central Institute of Science & Tech" }
+];
+
+const initialComplaints = [
+  {
+    id: "CNT-2026-0101",
+    institutionId: "12345",
+    institutionName: "Apex Institute of Technology",
+    department: "Regulation Bureau",
+    category: "Fee Exceeding AICTE Norms",
+    description: "College management is demanding mandatory development fees exceeding AICTE prescribed ceilings for B.Tech batch.",
+    status: "Pending",
+    priority: "HIGH",
+    isDuplicate: false,
+    matchedCaseId: null,
+    similarityScore: null,
+    aiReason: null,
+    deadline: "2026-11-05",
+    timeline: [
+      { date: "2026-10-20", action: "Grievance Registered", actor: "Student Portal" }
+    ]
+  },
+  {
+    id: "CNT-2026-0102",
+    institutionId: "54321",
+    institutionName: "Indore College of Engineering & Tech",
+    department: "Public Grievances",
+    category: "Infrastructure Deficit",
+    description: "Computer science labs lack updated hardware and high-speed internet required for curriculum practical sessions.",
+    status: "Pending",
+    priority: "MEDIUM",
+    isDuplicate: false,
+    matchedCaseId: null,
+    similarityScore: null,
+    aiReason: null,
+    deadline: "2026-11-10",
+    timeline: [
+      { date: "2026-10-21", action: "Grievance Registered", actor: "Student Portal" }
+    ]
+  },
+  {
+    id: "CNT-2026-0103",
+    institutionId: "99887",
+    institutionName: "Central Institute of Science & Tech",
+    department: "Faculty & Staff Dispute",
+    category: "Faculty Non-Availability",
+    description: "Core mechanical engineering classes were suspended due to unfilled faculty positions in the current term.",
+    status: "Resolved",
+    priority: "HIGH",
+    isDuplicate: false,
+    matchedCaseId: null,
+    similarityScore: null,
+    aiReason: null,
+    deadline: "2026-10-28",
+    timeline: [
+      { date: "2026-10-15", action: "Grievance Registered", actor: "Student Portal" },
+      { date: "2026-10-22", action: "Action Taken / Resolved: Faculty recruitment verification completed.", actor: "AICTE Officer" }
+    ]
+  }
+];
 
 export default function OneDeskDashboard() {
-  // Authentication State
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [loginRole, setLoginRole] = useState('student'); // 'student', 'institution', 'officer'
+  const [loginRole, setLoginRole] = useState('student');
   const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
 
@@ -15,11 +77,12 @@ export default function OneDeskDashboard() {
   const [complaints, setComplaints] = useState(initialComplaints);
   const [selectedDept, setSelectedDept] = useState('All');
   const [searchPid, setSearchPid] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
   const [selectedCase, setSelectedCase] = useState(complaints[0]);
   
-  // New Complaint Form
+  // Form State
   const [targetInstName, setTargetInstName] = useState('Apex Institute of Technology');
-  const [targetPid, setTargetPid] = useState('1-99887766');
+  const [targetPid, setTargetPid] = useState('12345');
   const [newDesc, setNewDesc] = useState('');
   const [newCat, setNewCat] = useState('Fee Exceeding AICTE Norms');
   const [aiAlert, setAiAlert] = useState(null);
@@ -37,11 +100,10 @@ export default function OneDeskDashboard() {
     setPassword('');
   };
 
-  // Filter complaints based on Role & Search PID
   const filteredComplaints = complaints.filter(c => {
     const matchesDept = selectedDept === 'All' ? true : c.department === selectedDept;
     if (role === 'institution') {
-      return matchesDept && (c.institutionId === '1-99887766' || c.institutionName.includes('Apex'));
+      return matchesDept && (c.institutionId === '12345' || c.institutionName.includes('Apex'));
     }
     if (role === 'officer' && searchPid.trim() !== '') {
       return matchesDept && (c.institutionId.includes(searchPid) || c.institutionName.toLowerCase().includes(searchPid.toLowerCase()));
@@ -73,7 +135,7 @@ export default function OneDeskDashboard() {
     const newId = `CNT-2026-010${complaints.length + 1}`;
     const newEntry = {
       id: newId,
-      institutionId: targetPid || "1-99887766",
+      institutionId: targetPid || "12345",
       institutionName: targetInstName || "Apex Institute of Technology",
       department: newCat.includes('Fee') ? "Regulation Bureau" : "Public Grievances",
       category: newCat,
@@ -129,7 +191,6 @@ export default function OneDeskDashboard() {
     setOfficerRemark('');
   };
 
-  // 1. SECURE HUMAN-MADE LOGIN SCREEN
   if (!isLoggedIn) {
     return (
       <div className="min-h-screen bg-stone-100 text-stone-800 flex items-center justify-center p-4 font-sans">
@@ -142,7 +203,6 @@ export default function OneDeskDashboard() {
             <p className="text-xs text-stone-500 mt-1">National Technical Education Grievance Portal</p>
           </div>
 
-          {/* Role Selector Tabs */}
           <div className="grid grid-cols-3 gap-1 p-1 bg-stone-100 rounded-xl border border-stone-200 mb-6 text-xs">
             <button 
               type="button"
@@ -176,7 +236,7 @@ export default function OneDeskDashboard() {
                 <input 
                   type="text" 
                   required
-                  placeholder={loginRole === 'student' ? 'STU-2026-9081' : loginRole === 'institution' ? '1-99887766' : 'officer@aicte-india.org'}
+                  placeholder={loginRole === 'student' ? 'STU-2026-9081' : loginRole === 'institution' ? '12345' : 'officer@aicte-india.org'}
                   value={userId}
                   onChange={(e) => setUserId(e.target.value)}
                   className="w-full bg-stone-50 border border-stone-300 rounded-xl py-2.5 pl-10 pr-4 text-xs text-stone-800 focus:outline-none focus:border-amber-600 transition"
@@ -221,7 +281,6 @@ export default function OneDeskDashboard() {
     );
   }
 
-  // 2. MAIN DASHBOARD VIEW
   return (
     <div className="min-h-screen bg-stone-100 text-stone-800 font-sans p-6">
       <header className="flex justify-between items-center bg-white p-4 rounded-xl border border-stone-200 mb-6 shadow-sm">
@@ -251,20 +310,50 @@ export default function OneDeskDashboard() {
         </div>
       </header>
 
-      {/* Role Metrics / Filter Bar */}
       {role === 'officer' && (
         <div className="space-y-4 mb-6">
-          <div className="bg-white p-3.5 rounded-xl border border-stone-200 flex items-center gap-3">
-            <Search className="w-4 h-4 text-stone-400 shrink-0" />
-            <input 
-              type="text"
-              placeholder="Search complaints by College PID (e.g. 1-99887766) or College Name..."
-              value={searchPid}
-              onChange={(e) => setSearchPid(e.target.value)}
-              className="w-full text-xs bg-transparent border-none focus:outline-none text-stone-800"
-            />
-            {searchPid && (
-              <button onClick={() => setSearchPid('')} className="text-xs text-stone-400 hover:text-stone-600">Clear</button>
+          {/* SEARCH WITH DROPDOWN OPTIONS */}
+          <div className="relative bg-white p-3.5 rounded-xl border border-stone-200 shadow-sm">
+            <div className="flex items-center gap-3">
+              <Search className="w-4 h-4 text-stone-400 shrink-0" />
+              <input 
+                type="text"
+                placeholder="Click to select college or type PID / Name..."
+                value={searchPid}
+                onFocus={() => setShowDropdown(true)}
+                onChange={(e) => {
+                  setSearchPid(e.target.value);
+                  setShowDropdown(true);
+                }}
+                className="w-full text-xs bg-transparent border-none focus:outline-none text-stone-800 font-medium"
+              />
+              <ChevronDown className="w-4 h-4 text-stone-400 cursor-pointer" onClick={() => setShowDropdown(!showDropdown)} />
+              {searchPid && (
+                <button onClick={() => { setSearchPid(''); setShowDropdown(false); }} className="text-xs text-stone-400 hover:text-stone-600">Clear</button>
+              )}
+            </div>
+
+            {/* AUTOCOMPLETE DROPDOWN */}
+            {showDropdown && (
+              <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-stone-200 rounded-xl shadow-lg z-50 overflow-hidden max-h-48 overflow-y-auto">
+                <div className="p-2 text-[10px] uppercase tracking-wider font-bold text-stone-400 bg-stone-50 border-b border-stone-100">
+                  Select Registered Institution:
+                </div>
+                {collegesList.map((col) => (
+                  <div 
+                    key={col.pid}
+                    onClick={() => {
+                      setSearchPid(col.pid);
+                      setShowDropdown(false);
+                    }}
+                    className="p-2.5 hover:bg-amber-50/80 cursor-pointer flex justify-between items-center border-b border-stone-100 text-xs transition">
+                    <span className="font-semibold text-stone-800">{col.name}</span>
+                    <span className="text-[11px] font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded border border-amber-200">
+                      PID: {col.pid}
+                    </span>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
 
@@ -301,7 +390,6 @@ export default function OneDeskDashboard() {
         </div>
       )}
 
-      {/* STUDENT ROLE: FILE COMPLAINT */}
       {role === 'student' ? (
         <div className="max-w-2xl mx-auto bg-white p-6 rounded-xl border border-stone-200 shadow-sm">
           <h2 className="text-base font-bold text-stone-900 mb-1">Lodge Official Student Grievance</h2>
@@ -367,7 +455,6 @@ export default function OneDeskDashboard() {
           </form>
         </div>
       ) : (
-        /* OFFICER & INSTITUTION VIEW */
         <div className="grid grid-cols-12 gap-6">
           <div className="col-span-5 bg-white p-4 rounded-xl border border-stone-200 shadow-sm">
             <div className="flex justify-between items-center mb-4">
@@ -400,7 +487,7 @@ export default function OneDeskDashboard() {
                       </span>
                     </div>
                     <p className="text-xs font-semibold text-stone-800 truncate">{item.category}</p>
-                    <p className="text-[11px] text-stone-500 truncate mt-0.5">{item.institutionName} ({item.institutionId})</p>
+                    <p className="text-[11px] text-stone-500 truncate mt-0.5">{item.institutionName} (PID: {item.institutionId})</p>
                     
                     {item.isDuplicate && (
                       <div className="mt-2 text-[10px] text-amber-800 bg-amber-100/70 p-1.5 rounded-md flex items-center gap-1 border border-amber-200">
@@ -441,7 +528,6 @@ export default function OneDeskDashboard() {
                   <p className="text-xs bg-stone-50 p-3.5 rounded-xl border border-stone-200 text-stone-800 leading-relaxed">{selectedCase.description}</p>
                 </div>
 
-                {/* Action / Remarks Box */}
                 <div className="mb-6 p-3.5 bg-stone-50 rounded-xl border border-stone-200">
                   <h3 className="text-xs font-semibold text-stone-700 mb-2">
                     {role === 'officer' ? 'Official Action / Verification Remarks' : 'Institutional Clarification Response'}
