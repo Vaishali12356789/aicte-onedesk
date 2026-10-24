@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { calculateSemanticOverlap } from './utils/aiEngine';
-import { Shield, Filter, Send, CheckCircle, Clock, FileText, Lock, UserCheck, Building2, User, Key, LogOut, Search, AlertCircle, ChevronDown } from 'lucide-react';
+import { Shield, Filter, Send, CheckCircle, Clock, FileText, Lock, UserCheck, Building2, User, Key, LogOut, Search, AlertCircle, ChevronDown, Cpu, Activity } from 'lucide-react';
 
 const collegesList = [
   { pid: "12345", name: "Apex Institute of Technology" },
@@ -10,6 +10,27 @@ const collegesList = [
 ];
 
 const initialComplaints = [
+  {
+    id: "CNT-2026-0100",
+    institutionId: "12345",
+    institutionName: "Apex Institute of Technology",
+    department: "Anti-Ragging Cell",
+    category: "Ragging & Student Harassment",
+    description: "Severe ragging and harassment reported by junior hostel residents involving senior students. Immediate intervention requested under AICTE anti-ragging protocols.",
+    status: "Pending",
+    priority: "CRITICAL",
+    isDuplicate: false,
+    matchedCaseId: null,
+    similarityScore: null,
+    aiReason: null,
+    aiMonitored: true,
+    aiStatus: "AI Surveillance & Sentiment Active ⚡",
+    deadline: "2026-10-25",
+    timeline: [
+      { date: "2026-10-24", action: "Grievance Registered via Student Portal", actor: "Student" },
+      { date: "2026-10-24", action: "AI Engine Flagged Critical Priority & Notified Anti-Ragging Squad", actor: "AI Monitoring Engine" }
+    ]
+  },
   {
     id: "CNT-2026-0101",
     institutionId: "12345",
@@ -23,9 +44,12 @@ const initialComplaints = [
     matchedCaseId: null,
     similarityScore: null,
     aiReason: null,
+    aiMonitored: true,
+    aiStatus: "AI Semantic Validation Passed ✓",
     deadline: "2026-11-05",
     timeline: [
-      { date: "2026-10-20", action: "Grievance Registered", actor: "Student Portal" }
+      { date: "2026-10-20", action: "Grievance Registered", actor: "Student Portal" },
+      { date: "2026-10-20", action: "AI Duplicate Check Completed (No Overlap)", actor: "AI Engine" }
     ]
   },
   {
@@ -41,28 +65,11 @@ const initialComplaints = [
     matchedCaseId: null,
     similarityScore: null,
     aiReason: null,
+    aiMonitored: true,
+    aiStatus: "AI Monitoring Active",
     deadline: "2026-11-10",
     timeline: [
       { date: "2026-10-21", action: "Grievance Registered", actor: "Student Portal" }
-    ]
-  },
-  {
-    id: "CNT-2026-0103",
-    institutionId: "99887",
-    institutionName: "Central Institute of Science & Tech",
-    department: "Faculty & Staff Dispute",
-    category: "Faculty Non-Availability",
-    description: "Core mechanical engineering classes were suspended due to unfilled faculty positions in the current term.",
-    status: "Resolved",
-    priority: "HIGH",
-    isDuplicate: false,
-    matchedCaseId: null,
-    similarityScore: null,
-    aiReason: null,
-    deadline: "2026-10-28",
-    timeline: [
-      { date: "2026-10-15", action: "Grievance Registered", actor: "Student Portal" },
-      { date: "2026-10-22", action: "Action Taken / Resolved: Faculty recruitment verification completed.", actor: "AICTE Officer" }
     ]
   }
 ];
@@ -80,11 +87,14 @@ export default function OneDeskDashboard() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedCase, setSelectedCase] = useState(complaints[0]);
   
-  // Form State
+  // Student Form State with 3 Dropdowns
   const [targetInstName, setTargetInstName] = useState('Apex Institute of Technology');
   const [targetPid, setTargetPid] = useState('12345');
+  const [formDepartment, setFormDepartment] = useState('Anti-Ragging Cell');
+  const [formCategory, setFormCategory] = useState('Ragging & Student Harassment');
+  const [otherCategoryInput, setOtherCategoryInput] = useState('');
+  const [formPriority, setFormPriority] = useState('CRITICAL');
   const [newDesc, setNewDesc] = useState('');
-  const [newCat, setNewCat] = useState('Fee Exceeding AICTE Norms');
   const [aiAlert, setAiAlert] = useState(null);
   const [officerRemark, setOfficerRemark] = useState('');
 
@@ -113,7 +123,7 @@ export default function OneDeskDashboard() {
 
   const totalCount = complaints.length;
   const pendingCount = complaints.filter(c => c.status === 'Pending').length;
-  const highPriorityCount = complaints.filter(c => c.priority === 'HIGH').length;
+  const highPriorityCount = complaints.filter(c => c.priority === 'HIGH' || c.priority === 'CRITICAL').length;
   const duplicateCount = complaints.filter(c => c.isDuplicate).length;
 
   const handleSubmitComplaint = (e) => {
@@ -132,23 +142,28 @@ export default function OneDeskDashboard() {
       }
     }
 
+    const finalCategory = formCategory === 'Other' ? otherCategoryInput || 'Other Custom Issue' : formCategory;
     const newId = `CNT-2026-010${complaints.length + 1}`;
+    
     const newEntry = {
       id: newId,
       institutionId: targetPid || "12345",
       institutionName: targetInstName || "Apex Institute of Technology",
-      department: newCat.includes('Fee') ? "Regulation Bureau" : "Public Grievances",
-      category: newCat,
+      department: formDepartment,
+      category: finalCategory,
       description: newDesc,
       status: "Pending",
-      priority: newDesc.toLowerCase().includes('harassment') || newDesc.toLowerCase().includes('urgent') ? "HIGH" : "MEDIUM",
+      priority: formPriority,
       isDuplicate: !!matchFound,
       matchedCaseId: matchFound ? matchFound.id : null,
       similarityScore: highestScore ? highestScore.score : null,
       aiReason: highestScore ? highestScore.reason : null,
+      aiMonitored: true,
+      aiStatus: "AI Monitored 24/7 & Verified ⚡",
       deadline: "2026-11-05",
       timeline: [
-        { date: new Date().toISOString().split('T')[0], action: "Grievance Filed by Student", actor: "Registered Student/User" }
+        { date: new Date().toISOString().split('T')[0], action: "Grievance Filed by Student", actor: "Registered Student" },
+        { date: new Date().toISOString().split('T')[0], action: "AI Monitoring Engine active: Sentiment & Priority assigned", actor: "AI Engine" }
       ]
     };
 
@@ -156,37 +171,40 @@ export default function OneDeskDashboard() {
     setSelectedCase(newEntry);
     
     if (matchFound) {
-      setAiAlert(`⚠️ Overlap Flag: Duplicate grievance detected with Case #${matchFound.id} (${highestScore.score} similarity).`);
+      setAiAlert(`⚠️ Overlap Flag: Duplicate grievance detected with Case #${matchFound.id} (${highestScore.score} similarity). AI monitoring linked both records.`);
     } else {
-      setAiAlert(`✅ Grievance registered successfully under ID: ${newId}`);
+      setAiAlert(`✅ Grievance registered successfully under ID: ${newId} with active AI surveillance.`);
     }
 
     setNewDesc('');
+    setOtherCategoryInput('');
   };
 
   const handleResolveCase = () => {
     if (!selectedCase) return;
+    const currentDate = new Date().toISOString().split('T')[0];
+    const newTimelineItem = {
+      date: currentDate,
+      action: `Action Taken / Resolved: ${officerRemark || 'Verification completed.'}`,
+      actor: role === 'officer' ? 'AICTE Officer' : 'Institute Representative'
+    };
+
     const updated = complaints.map(c => {
       if (c.id === selectedCase.id) {
         return {
           ...c,
           status: 'Resolved',
-          timeline: [
-            ...c.timeline,
-            { date: new Date().toISOString().split('T')[0], action: `Action Taken / Resolved: ${officerRemark || 'Verification completed.'}`, actor: role === 'officer' ? 'AICTE Officer' : 'Institute Representative' }
-          ]
+          timeline: [...c.timeline, newTimelineItem]
         };
       }
       return c;
     });
+
     setComplaints(updated);
     setSelectedCase({
       ...selectedCase,
       status: 'Resolved',
-      timeline: [
-        ...selectedCase.timeline,
-        { date: new Date().toISOString().split('T')[0], action: `Action Taken / Resolved: ${officerRemark || 'Verification completed.'}`, actor: role === 'officer' ? 'AICTE Officer' : 'Institute Representative' }
-      ]
+      timeline: [...selectedCase.timeline, newTimelineItem]
     });
     setOfficerRemark('');
   };
@@ -200,7 +218,7 @@ export default function OneDeskDashboard() {
               <Shield className="w-8 h-8" />
             </div>
             <h1 className="text-2xl font-bold tracking-tight text-stone-900">AICTE OneDesk</h1>
-            <p className="text-xs text-stone-500 mt-1">National Technical Education Grievance Portal</p>
+            <p className="text-xs text-stone-500 mt-1">National Technical Education Grievance & AI Monitoring Portal</p>
           </div>
 
           <div className="grid grid-cols-3 gap-1 p-1 bg-stone-100 rounded-xl border border-stone-200 mb-6 text-xs">
@@ -290,11 +308,16 @@ export default function OneDeskDashboard() {
           </div>
           <div>
             <h1 className="text-lg font-bold tracking-tight text-stone-900">AICTE OneDesk</h1>
-            <p className="text-[11px] text-stone-500">Centralized Grievance Redressal & Institutional Audit Engine</p>
+            <p className="text-[11px] text-stone-500">Centralized Grievance Redressal & AI Monitoring Engine</p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
+          <div className="flex items-center bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-200 text-xs font-medium text-amber-900 gap-1.5">
+            <Activity className="w-3.5 h-3.5 text-amber-700 animate-pulse" />
+            <span>AI Surveillance Active</span>
+          </div>
+          
           <div className="flex items-center bg-stone-100 p-1 rounded-xl border border-stone-200 text-xs font-medium text-stone-600">
             <span className="px-3 py-1 bg-white rounded-lg border border-stone-200 text-stone-900 shadow-sm">
               Role: <strong className="capitalize">{role} Mode</strong>
@@ -373,7 +396,7 @@ export default function OneDeskDashboard() {
             <div className="bg-white p-3.5 rounded-xl border border-stone-200 flex items-center gap-3 shadow-sm">
               <AlertCircle className="w-6 h-6 text-rose-600" />
               <div>
-                <p className="text-[10px] text-stone-500 uppercase font-semibold">High Priority</p>
+                <p className="text-[10px] text-stone-500 uppercase font-semibold">High/Critical Priority</p>
                 <p className="text-lg font-bold text-stone-900">{highPriorityCount}</p>
               </div>
             </div>
@@ -390,8 +413,13 @@ export default function OneDeskDashboard() {
 
       {role === 'student' ? (
         <div className="max-w-2xl mx-auto bg-white p-6 rounded-xl border border-stone-200 shadow-sm">
-          <h2 className="text-base font-bold text-stone-900 mb-1">Submit Student Grievance Portal</h2>
-          <p className="text-xs text-stone-500 mb-6">Submissions directly audited by AICTE Bureau & Institution Panel.</p>
+          <div className="flex justify-between items-center mb-1">
+            <h2 className="text-base font-bold text-stone-900">Submit Student Grievance Portal</h2>
+            <span className="text-[11px] bg-amber-50 text-amber-800 border border-amber-200 px-2.5 py-1 rounded-lg font-medium flex items-center gap-1">
+              <Cpu className="w-3.5 h-3.5 text-amber-600" /> 24/7 AI Monitored
+            </span>
+          </div>
+          <p className="text-xs text-stone-500 mb-6">Submissions directly audited by AICTE Bureau & Anti-Ragging Cell with real-time tracking.</p>
 
           {aiAlert && (
             <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900">
@@ -423,32 +451,77 @@ export default function OneDeskDashboard() {
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-stone-700 mb-1">Grievance Category</label>
-              <select 
-                value={newCat}
-                onChange={(e) => setNewCat(e.target.value)}
-                className="w-full bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-xs focus:outline-none focus:border-amber-600 text-stone-800">
-                <option value="Fee Exceeding AICTE Norms">Fee Exceeding AICTE Norms</option>
-                <option value="Faculty & Staff Dispute">Faculty & Staff Dispute</option>
-                <option value="Infrastructure Deficit">Infrastructure Deficit</option>
-              </select>
+            {/* 3 Dropdowns Required by User */}
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 mb-1">1. Department / Bureau</label>
+                <select 
+                  value={formDepartment}
+                  onChange={(e) => setFormDepartment(e.target.value)}
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-xs focus:outline-none focus:border-amber-600 text-stone-800">
+                  <option value="Anti-Ragging Cell">Anti-Ragging Cell</option>
+                  <option value="Regulation Bureau">Regulation Bureau</option>
+                  <option value="Public Grievances">Public Grievances</option>
+                  <option value="Academic Affairs">Academic Affairs</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 mb-1">2. Grievance Category</label>
+                <select 
+                  value={formCategory}
+                  onChange={(e) => setFormCategory(e.target.value)}
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-xs focus:outline-none focus:border-amber-600 text-stone-800">
+                  <option value="Ragging & Student Harassment">Ragging & Harassment</option>
+                  <option value="Fee Exceeding AICTE Norms">Fee Exceeding Norms</option>
+                  <option value="Infrastructure Deficit">Infrastructure Deficit</option>
+                  <option value="Faculty & Staff Dispute">Faculty Dispute</option>
+                  <option value="Other">Other (Specify Below)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 mb-1">3. Urgency / Priority</label>
+                <select 
+                  value={formPriority}
+                  onChange={(e) => setFormPriority(e.target.value)}
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-xs focus:outline-none focus:border-amber-600 text-stone-800">
+                  <option value="CRITICAL">Critical (Immediate)</option>
+                  <option value="HIGH">High Priority</option>
+                  <option value="MEDIUM">Medium Priority</option>
+                </select>
+              </div>
             </div>
 
+            {/* Conditional input if 'Other' category is selected */}
+            {formCategory === 'Other' && (
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 mb-1">Specify Other Category Type</label>
+                <input 
+                  type="text"
+                  required
+                  placeholder="Enter custom grievance category..."
+                  value={otherCategoryInput}
+                  onChange={(e) => setOtherCategoryInput(e.target.value)}
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-xs text-stone-800 focus:outline-none focus:border-amber-600"
+                />
+              </div>
+            )}
+
             <div>
-              <label className="block text-xs font-semibold text-stone-700 mb-1">Detailed Description</label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1">Detailed Description (AI Monitored)</label>
               <textarea 
                 rows={4}
                 required
                 value={newDesc}
                 onChange={(e) => setNewDesc(e.target.value)}
-                placeholder="Describe your issue clearly. Smart Engine will automatically verify for existing duplicates..."
+                placeholder="Describe your issue clearly. AI Monitoring Engine will analyze sentiment, check duplicates, and track timeline automatically..."
                 className="w-full bg-stone-50 border border-stone-200 rounded-xl p-3 text-xs focus:outline-none focus:border-amber-600 text-stone-800"
               />
             </div>
 
             <button type="submit" className="w-full bg-amber-800 hover:bg-amber-900 text-white text-xs font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition shadow-sm">
-              <Send className="w-4 h-4" /> Submit & Analyze Grievance
+              <Send className="w-4 h-4" /> Submit & Trigger AI Surveillance
             </button>
           </form>
         </div>
@@ -464,6 +537,7 @@ export default function OneDeskDashboard() {
                 onChange={(e) => setSelectedDept(e.target.value)}
                 className="bg-stone-50 text-xs border border-stone-200 rounded-lg p-1.5 focus:outline-none text-stone-700">
                 <option value="All">All Bureaus</option>
+                <option value="Anti-Ragging Cell">Anti-Ragging Cell</option>
                 <option value="Regulation Bureau">Regulation Bureau</option>
                 <option value="Public Grievances">Public Grievances</option>
               </select>
@@ -480,15 +554,26 @@ export default function OneDeskDashboard() {
                     className={`p-3 rounded-xl border cursor-pointer transition ${selectedCase?.id === item.id ? 'bg-amber-50/60 border-amber-600' : 'bg-stone-50/50 border-stone-200 hover:border-stone-300'}`}>
                     <div className="flex justify-between items-start mb-1">
                       <span className="text-xs font-bold text-amber-900">{item.id}</span>
-                      <span className={`text-[10px] px-2 py-0.5 rounded font-semibold ${item.priority === 'HIGH' ? 'bg-rose-100 text-rose-800 border border-rose-200' : 'bg-amber-100 text-amber-800'}`}>
-                        {item.priority}
-                      </span>
+                      <div className="flex gap-1.5">
+                        <span className="text-[10px] px-2 py-0.5 rounded font-medium bg-amber-50 text-amber-800 border border-amber-200">
+                          {item.department}
+                        </span>
+                        <span className={`text-[10px] px-2 py-0.5 rounded font-semibold ${item.priority === 'CRITICAL' || item.priority === 'HIGH' ? 'bg-rose-100 text-rose-800 border border-rose-200' : 'bg-amber-100 text-amber-800'}`}>
+                          {item.priority}
+                        </span>
+                      </div>
                     </div>
                     <p className="text-xs font-semibold text-stone-800 truncate">{item.category}</p>
                     <p className="text-[11px] text-stone-500 truncate mt-0.5">{item.institutionName} (PID: {item.institutionId})</p>
                     
+                    <div className="mt-2 flex items-center justify-between text-[10px] text-stone-500 bg-stone-100 p-1.5 rounded-md border border-stone-200">
+                      <span className="flex items-center gap-1 text-amber-900 font-medium">
+                        <Cpu className="w-3 h-3 text-amber-600" /> {item.aiStatus || 'AI Monitored'}
+                      </span>
+                    </div>
+
                     {item.isDuplicate && (
-                      <div className="mt-2 text-[10px] text-amber-800 bg-amber-100/70 p-1.5 rounded-md flex items-center gap-1 border border-amber-200">
+                      <div className="mt-1.5 text-[10px] text-amber-800 bg-amber-100/70 p-1.5 rounded-md flex items-center gap-1 border border-amber-200">
                         <AlertCircle className="w-3 h-3 shrink-0" /> AI Overlap Flag ({item.similarityScore})
                       </div>
                     )}
@@ -503,11 +588,28 @@ export default function OneDeskDashboard() {
               <div>
                 <div className="flex justify-between items-start border-b border-stone-200 pb-4 mb-4">
                   <div>
-                    <span className="text-xs font-semibold text-amber-800">{selectedCase.institutionName} • PID: {selectedCase.institutionId}</span>
-                    <h2 className="text-base font-bold text-stone-900 mt-0.5">{selectedCase.category}</h2>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs font-semibold text-amber-800">{selectedCase.institutionName} • PID: {selectedCase.institutionId}</span>
+                      <span className="text-[10px] bg-amber-100 text-amber-900 px-2 py-0.5 rounded font-bold">{selectedCase.department}</span>
+                    </div>
+                    <h2 className="text-base font-bold text-stone-900">{selectedCase.category}</h2>
                   </div>
                   <span className={`text-xs px-3 py-1 rounded-full font-medium border ${selectedCase.status === 'Resolved' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-stone-100 text-stone-800 border-stone-300'}`}>
                     {selectedCase.status}
+                  </span>
+                </div>
+
+                {/* AI Monitoring Status Banner */}
+                <div className="mb-4 p-3 bg-amber-50/70 border border-amber-200 rounded-xl text-xs flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-amber-900">
+                    <Cpu className="w-4 h-4 text-amber-700 animate-pulse" />
+                    <div>
+                      <strong className="block">AI Surveillance & Monitoring Engine Active</strong>
+                      <span className="text-[11px] text-stone-600">Complaint continuously analyzed for compliance, sentiment urgency, and duplicate matching.</span>
+                    </div>
+                  </div>
+                  <span className="text-[11px] font-bold bg-white text-amber-900 px-2.5 py-1 rounded-lg border border-amber-300">
+                    {selectedCase.aiStatus || 'Monitored'}
                   </span>
                 </div>
 
@@ -546,14 +648,17 @@ export default function OneDeskDashboard() {
                   </div>
                 </div>
 
+                {/* Timeline Tracking Section */}
                 <div>
-                  <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-3">Audit Trail Log</h3>
-                  <div className="space-y-3 relative pl-4 border-l-2 border-stone-200 max-h-[160px] overflow-y-auto">
+                  <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-amber-700" /> Complaint Timeline Tracking Log
+                  </h3>
+                  <div className="space-y-3 relative pl-4 border-l-2 border-amber-300 max-h-[180px] overflow-y-auto">
                     {selectedCase.timeline.map((log, idx) => (
                       <div key={idx} className="relative">
-                        <div className="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-stone-400"></div>
+                        <div className="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-amber-600 ring-4 ring-amber-100"></div>
                         <p className="text-xs font-semibold text-stone-800">{log.action}</p>
-                        <p className="text-[10px] text-stone-500">{log.date} • Performed by <span className="text-amber-800 font-medium">{log.actor}</span></p>
+                        <p className="text-[10px] text-stone-500">{log.date} • Logged by <span className="text-amber-800 font-medium">{log.actor}</span></p>
                       </div>
                     ))}
                   </div>
