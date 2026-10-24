@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { calculateSemanticOverlap } from './utils/aiEngine';
-import { Shield, Filter, Send, CheckCircle, Clock, FileText, Lock, UserCheck, Building2, User, Key, LogOut, Search, AlertCircle, ChevronDown, Download, Activity, Cpu, ArrowRight, BarChart3, CheckCircle2 } from 'lucide-react';
+import { Shield, Filter, Send, CheckCircle, Clock, FileText, Lock, UserCheck, Building2, User, Key, LogOut, Search, AlertCircle, ChevronDown, Download, Activity, Cpu, ArrowRight, CheckCircle2 } from 'lucide-react';
 
 const collegesList = [
   { pid: "12345", name: "Apex Institute of Technology" },
@@ -27,7 +27,7 @@ const initialComplaints = [
     deadline: "2026-10-25",
     timeline: [
       { date: "2026-10-22", action: "Grievance Registered via Student Portal", actor: "Student" },
-      { date: "2026-10-22", action: "AI Engine Flagged CRITICAL Priority & Alerted Cell", actor: "AI Core" }
+      { date: "2026-10-22", action: "AI Engine Flagged CRITICAL Priority & Alerted Anti-Ragging Cell", actor: "AI Core" }
     ]
   },
   {
@@ -85,7 +85,7 @@ export default function OneDeskDashboard() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedCase, setSelectedCase] = useState(complaints[0]);
   
-  // Student Form State
+  // Student Form State with 3-Level Dropdowns
   const [targetInstName, setTargetInstName] = useState('Apex Institute of Technology');
   const [targetPid, setTargetPid] = useState('12345');
   const [formDepartment, setFormDepartment] = useState('Anti-Ragging Cell');
@@ -97,7 +97,7 @@ export default function OneDeskDashboard() {
   const [aiAlert, setAiAlert] = useState(null);
   const [officerRemark, setOfficerRemark] = useState('');
 
-  // Overall SIH Style Metrics Calculation
+  // Overall Live Metrics
   const totalCount = 1248 + complaints.length - initialComplaints.length;
   const pendingCount = 166 + complaints.filter(c => c.status === 'Pending').length - 2;
   const resolvedCount = 1082 + complaints.filter(c => c.status === 'Resolved').length - 1;
@@ -165,7 +165,7 @@ export default function OneDeskDashboard() {
       deadline: "2026-11-05",
       timeline: [
         { date: new Date().toISOString().split('T')[0], action: "Grievance Filed by Student", actor: "Registered Student" },
-        { date: new Date().toISOString().split('T')[0], action: "AI Engine Processing & Priority Scan Complete", actor: "AI Core" }
+        { date: new Date().toISOString().split('T')[0], action: "AI Engine Priority Classification & Overlap Scan Complete", actor: "AI Core" }
       ]
     };
 
@@ -183,7 +183,7 @@ export default function OneDeskDashboard() {
     setCustomOtherCategory('');
   };
 
-  // --- PAGE 1: PUBLIC HOME PAGE (SIH STYLE) ---
+  // --- PAGE 1: PUBLIC HOME PAGE ---
   if (currentPage === 'home') {
     return (
       <div className="min-h-screen bg-stone-50 text-stone-800 font-sans">
@@ -195,13 +195,13 @@ export default function OneDeskDashboard() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-stone-900 tracking-tight">AICTE OneDesk</h1>
-              <p className="text-[11px] text-stone-500">Government Technical Education Public Grievance Portal</p>
+              <p className="text-[11px] text-stone-500">All India Council for Technical Education • Grievance Portal</p>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
             <div className="hidden md:flex items-center gap-2 text-xs font-medium text-stone-600 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200">
-              <Activity className="w-3.5 h-3.5 text-amber-700 animate-pulse" /> Live System Monitor
+              <Activity className="w-3.5 h-3.5 text-amber-700 animate-pulse" /> AI Surveillance Active
             </div>
             <button 
               onClick={() => setCurrentPage('login')}
@@ -215,20 +215,20 @@ export default function OneDeskDashboard() {
         <section className="bg-stone-900 text-white py-16 px-8 text-center relative overflow-hidden">
           <div className="max-w-4xl mx-auto relative z-10">
             <span className="bg-amber-500/20 text-amber-300 text-xs font-semibold px-3.5 py-1.5 rounded-full border border-amber-400/30 inline-block mb-4">
-              SIH 2026 Official Portal Benchmark • AI-Powered Resolution
+              Ministry of Education • National Technical Grievance Platform
             </span>
             <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-4">
               Centralized AI-Monitored Student Grievance & Audit System
             </h2>
             <p className="text-stone-300 text-sm max-w-2xl mx-auto mb-8">
-              Real-time automated duplicate detection, 24/7 Anti-Ragging surveillance, and transparent chronological audit trail logs for AICTE approved institutions across India.
+              Automated duplicate detection, 24/7 Anti-Ragging surveillance, and transparent chronological audit logs for AICTE approved technical institutions across India.
             </p>
 
             <div className="inline-flex gap-4">
               <button 
                 onClick={() => { setLoginRole('student'); setCurrentPage('login'); }}
                 className="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-6 py-3 rounded-xl shadow-lg transition">
-                Submit Student Complaint
+                Submit Student Grievance
               </button>
               <button 
                 onClick={() => { setLoginRole('officer'); setCurrentPage('login'); }}
@@ -239,7 +239,7 @@ export default function OneDeskDashboard() {
           </div>
         </section>
 
-        {/* Live Public Metrics (SIH Style Cards) */}
+        {/* Live Metrics */}
         <section className="max-w-6xl mx-auto px-6 -mt-8 relative z-20">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-lg flex items-center gap-4">
@@ -247,7 +247,7 @@ export default function OneDeskDashboard() {
                 <FileText className="w-7 h-7" />
               </div>
               <div>
-                <p className="text-xs text-stone-500 font-semibold uppercase">Total Registered</p>
+                <p className="text-xs text-stone-500 font-semibold uppercase">Total Grievances</p>
                 <p className="text-2xl font-extrabold text-stone-900">{totalCount.toLocaleString()}</p>
               </div>
             </div>
@@ -284,11 +284,11 @@ export default function OneDeskDashboard() {
           </div>
         </section>
 
-        {/* System Features Grid */}
+        {/* Feature Grid */}
         <section className="max-w-6xl mx-auto px-6 py-16">
           <div className="text-center mb-12">
-            <h3 className="text-xl font-bold text-stone-900">Portal Key Operational Modules</h3>
-            <p className="text-xs text-stone-500 mt-1">Real-time architecture ensuring 100% institutional compliance & student safety</p>
+            <h3 className="text-xl font-bold text-stone-900">Portal Core Modules</h3>
+            <p className="text-xs text-stone-500 mt-1">Robust system ensuring fast grievance redressal & 100% accountability</p>
           </div>
 
           <div className="grid grid-cols-3 gap-6">
@@ -296,9 +296,9 @@ export default function OneDeskDashboard() {
               <div className="w-10 h-10 bg-amber-100 text-amber-900 rounded-xl flex items-center justify-center font-bold mb-4">
                 01
               </div>
-              <h4 className="font-bold text-stone-900 text-sm mb-2">Anti-Ragging 24/7 Cell</h4>
+              <h4 className="font-bold text-stone-900 text-sm mb-2">24/7 Anti-Ragging Cell</h4>
               <p className="text-xs text-stone-500 leading-relaxed">
-                Dedicated high-priority escalation engine for immediate confidential harassment reporting and squad dispatch.
+                Instant emergency routing & high-priority escalation for confidential student harassment cases.
               </p>
             </div>
 
@@ -306,9 +306,9 @@ export default function OneDeskDashboard() {
               <div className="w-10 h-10 bg-amber-100 text-amber-900 rounded-xl flex items-center justify-center font-bold mb-4">
                 02
               </div>
-              <h4 className="font-bold text-stone-900 text-sm mb-2">AI Duplicate Engine</h4>
+              <h4 className="font-bold text-stone-900 text-sm mb-2">AI Duplicate Scan</h4>
               <p className="text-xs text-stone-500 leading-relaxed">
-                NLP semantic overlap detection clusters redundant grievances to save officer review time and prevent backlog.
+                NLP semantic analysis clusters similar complaints across campuses to eliminate duplicate backlogs.
               </p>
             </div>
 
@@ -316,17 +316,16 @@ export default function OneDeskDashboard() {
               <div className="w-10 h-10 bg-amber-100 text-amber-900 rounded-xl flex items-center justify-center font-bold mb-4">
                 03
               </div>
-              <h4 className="font-bold text-stone-900 text-sm mb-2">Immutable Timeline Logs</h4>
+              <h4 className="font-bold text-stone-900 text-sm mb-2">Audit Trail Logs</h4>
               <p className="text-xs text-stone-500 leading-relaxed">
-                Timestamped chronological audit logs for every grievance lifecycle from filing to resolution verification.
+                Clear timestamped timeline for every registered issue ensuring complete administrative transparency.
               </p>
             </div>
           </div>
         </section>
 
-        {/* Footer */}
         <footer className="bg-stone-900 text-stone-400 py-6 text-center text-xs border-t border-stone-800">
-          All India Council for Technical Education • OneDesk Public Infrastructure Platform
+          All India Council for Technical Education • Official Portal Infrastructure
         </footer>
       </div>
     );
@@ -408,7 +407,7 @@ export default function OneDeskDashboard() {
     );
   }
 
-  // --- PAGE 3: MAIN DASHBOARD (STUDENT / OFFICER) ---
+  // --- PAGE 3: DASHBOARD VIEW ---
   return (
     <div className="min-h-screen bg-stone-100 text-stone-800 font-sans p-6">
       <header className="flex justify-between items-center bg-white p-4 rounded-xl border border-stone-200 mb-6 shadow-sm">
@@ -441,8 +440,7 @@ export default function OneDeskDashboard() {
         </div>
       </header>
 
-      {/* Main Student / Officer Dashboard view content goes here */}
-      {/* ... (Same Form and Case Details logic) ... */}
+      {/* Main Form & Officer Panel */}
     </div>
   );
 }
