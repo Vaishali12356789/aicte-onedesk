@@ -72,7 +72,7 @@ const initialComplaints = [
 ];
 
 export default function OneDeskDashboard() {
-  const [currentPage, setCurrentPage] = useState('home');
+  const [currentPage, setCurrentPage] = useState('home'); // 'home' | 'login' | 'dashboard'
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loginRole, setLoginRole] = useState('student');
   const [userId, setUserId] = useState('');
@@ -126,6 +126,69 @@ export default function OneDeskDashboard() {
     }
     return matchesDept;
   });
+
+  const exportWordDoc = () => {
+    const targetData = filteredComplaints;
+    let docContent = `
+      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      <head><title>AICTE OneDesk Institutional Report</title>
+      <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        h1 { color: #854d0e; text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; font-size: 12px; }
+        th { background-color: #f1f5f9; }
+      </style>
+      </head>
+      <body>
+        <h1>ALL INDIA COUNCIL FOR TECHNICAL EDUCATION (AICTE)</h1>
+        <h3 style="text-align:center;">OneDesk Grievance & Audit Report - Offline Export</h3>
+        <p><strong>Export Date:</strong> ${new Date().toLocaleDateString()}</p>
+        <p><strong>Total Complaints Exported:</strong> ${targetData.length}</p>
+        <hr/>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Institute Name (PID)</th>
+              <th>Bureau/Category</th>
+              <th>Priority</th>
+              <th>Status</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
+
+    targetData.forEach(c => {
+      docContent += `
+        <tr>
+          <td><b>${c.id}</b></td>
+          <td>${c.institutionName} (${c.institutionId})</td>
+          <td>${c.department} - <i>${c.category}</i></td>
+          <td>${c.priority}</td>
+          <td>${c.status}</td>
+          <td>${c.description}</td>
+        </tr>
+      `;
+    });
+
+    docContent += `
+          </tbody>
+        </table>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob(['\ufeff' + docContent], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `AICTE_OneDesk_Report_${searchPid || 'All'}_${new Date().toISOString().slice(0,10)}.doc`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const handleSubmitComplaint = (e) => {
     e.preventDefault();
@@ -182,11 +245,35 @@ export default function OneDeskDashboard() {
     setCustomOtherCategory('');
   };
 
-  // --- PUBLIC HOME PAGE (SPECIFIC TO AICTE PS# SIH26264) ---
+  const handleResolveCase = () => {
+    if (!selectedCase) return;
+    const currentDate = new Date().toISOString().split('T')[0];
+    const newTimelineItem = {
+      date: currentDate,
+      action: `Action Taken / Resolved: ${officerRemark || 'Verification completed.'}`,
+      actor: role === 'officer' ? 'AICTE Official' : 'Institute Admin'
+    };
+
+    const updated = complaints.map(c => {
+      if (c.id === selectedCase.id) {
+        return { ...c, status: 'Resolved', timeline: [...c.timeline, newTimelineItem] };
+      }
+      return c;
+    });
+
+    setComplaints(updated);
+    setSelectedCase({
+      ...selectedCase,
+      status: 'Resolved',
+      timeline: [...selectedCase.timeline, newTimelineItem]
+    });
+    setOfficerRemark('');
+  };
+
+  // 1. PUBLIC HOME PAGE
   if (currentPage === 'home') {
     return (
       <div className="min-h-screen bg-stone-50 text-stone-800 font-sans">
-        {/* Header Navigation */}
         <header className="bg-white border-b border-stone-200 px-8 py-4 flex justify-between items-center sticky top-0 z-50 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-amber-100 border border-amber-300 rounded-xl text-amber-900">
@@ -210,7 +297,6 @@ export default function OneDeskDashboard() {
           </div>
         </header>
 
-        {/* Hero Banner Section */}
         <section className="bg-stone-900 text-white py-16 px-8 text-center relative overflow-hidden">
           <div className="max-w-4xl mx-auto relative z-10">
             <span className="bg-amber-500/20 text-amber-300 text-xs font-bold px-3.5 py-1.5 rounded-full border border-amber-400/30 inline-block mb-4">
@@ -238,7 +324,6 @@ export default function OneDeskDashboard() {
           </div>
         </section>
 
-        {/* Live Public Metrics */}
         <section className="max-w-6xl mx-auto px-6 -mt-8 relative z-20">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-lg flex items-center gap-4">
@@ -283,7 +368,6 @@ export default function OneDeskDashboard() {
           </div>
         </section>
 
-        {/* Feature Grid */}
         <section className="max-w-6xl mx-auto px-6 py-16">
           <div className="text-center mb-12">
             <h3 className="text-xl font-bold text-stone-900">AICTE OneDesk Core Modules</h3>
@@ -292,33 +376,21 @@ export default function OneDeskDashboard() {
 
           <div className="grid grid-cols-3 gap-6">
             <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
-              <div className="w-10 h-10 bg-amber-100 text-amber-900 rounded-xl flex items-center justify-center font-bold mb-4">
-                01
-              </div>
+              <div className="w-10 h-10 bg-amber-100 text-amber-900 rounded-xl flex items-center justify-center font-bold mb-4">01</div>
               <h4 className="font-bold text-stone-900 text-sm mb-2">24/7 Anti-Ragging Cell</h4>
-              <p className="text-xs text-stone-500 leading-relaxed">
-                Instant emergency routing & high-priority escalation for confidential student harassment cases.
-              </p>
+              <p className="text-xs text-stone-500 leading-relaxed">Instant emergency routing & high-priority escalation for confidential student harassment cases.</p>
             </div>
 
             <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
-              <div className="w-10 h-10 bg-amber-100 text-amber-900 rounded-xl flex items-center justify-center font-bold mb-4">
-                02
-              </div>
+              <div className="w-10 h-10 bg-amber-100 text-amber-900 rounded-xl flex items-center justify-center font-bold mb-4">02</div>
               <h4 className="font-bold text-stone-900 text-sm mb-2">AI Duplicate Scan</h4>
-              <p className="text-xs text-stone-500 leading-relaxed">
-                NLP semantic analysis clusters similar complaints across campuses to eliminate duplicate backlogs.
-              </p>
+              <p className="text-xs text-stone-500 leading-relaxed">NLP semantic analysis clusters similar complaints across campuses to eliminate duplicate backlogs.</p>
             </div>
 
             <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
-              <div className="w-10 h-10 bg-amber-100 text-amber-900 rounded-xl flex items-center justify-center font-bold mb-4">
-                03
-              </div>
+              <div className="w-10 h-10 bg-amber-100 text-amber-900 rounded-xl flex items-center justify-center font-bold mb-4">03</div>
               <h4 className="font-bold text-stone-900 text-sm mb-2">Audit Trail Logs</h4>
-              <p className="text-xs text-stone-500 leading-relaxed">
-                Clear timestamped timeline for every registered issue ensuring complete administrative transparency.
-              </p>
+              <p className="text-xs text-stone-500 leading-relaxed">Clear timestamped timeline for every registered issue ensuring complete administrative transparency.</p>
             </div>
           </div>
         </section>
@@ -330,7 +402,7 @@ export default function OneDeskDashboard() {
     );
   }
 
-  // --- LOGIN SCREEN ---
+  // 2. LOGIN SCREEN
   if (currentPage === 'login') {
     return (
       <div className="min-h-screen bg-stone-100 text-stone-800 flex items-center justify-center p-4 font-sans relative">
@@ -406,7 +478,7 @@ export default function OneDeskDashboard() {
     );
   }
 
-  // --- DASHBOARD VIEW ---
+  // 3. MAIN DASHBOARD VIEW
   return (
     <div className="min-h-screen bg-stone-100 text-stone-800 font-sans p-6">
       <header className="flex justify-between items-center bg-white p-4 rounded-xl border border-stone-200 mb-6 shadow-sm">
@@ -439,7 +511,275 @@ export default function OneDeskDashboard() {
         </div>
       </header>
 
-      {/* Rest of Dashboard Interface */}
+      {role === 'officer' && (
+        <div className="space-y-4 mb-6">
+          <div className="relative bg-white p-3.5 rounded-xl border border-stone-200 shadow-sm flex items-center gap-3">
+            <div className="relative flex-1">
+              <div className="flex items-center gap-3">
+                <Search className="w-4 h-4 text-stone-400 shrink-0" />
+                <input type="text" placeholder="Click to select college or type PID / Name..." value={searchPid} onFocus={() => setShowDropdown(true)} onChange={(e) => { setSearchPid(e.target.value); setShowDropdown(true); }} className="w-full text-xs bg-transparent border-none focus:outline-none text-stone-800 font-medium" />
+                <ChevronDown className="w-4 h-4 text-stone-400 cursor-pointer" onClick={() => setShowDropdown(!showDropdown)} />
+                {searchPid && (
+                  <button onClick={() => { setSearchPid(''); setShowDropdown(false); }} className="text-xs text-stone-400 hover:text-stone-600">Clear</button>
+                )}
+              </div>
+
+              {showDropdown && (
+                <div className="absolute left-0 right-0 top-full mt-2 bg-white border border-stone-200 rounded-xl shadow-lg z-50 overflow-hidden max-h-48 overflow-y-auto">
+                  <div className="p-2 text-[10px] uppercase tracking-wider font-bold text-stone-400 bg-stone-50 border-b border-stone-100">
+                    Select Registered Institution:
+                  </div>
+                  {collegesList.map((col) => (
+                    <div key={col.pid} onClick={() => { setSearchPid(col.pid); setShowDropdown(false); }} className="p-2.5 hover:bg-amber-50/80 cursor-pointer flex justify-between items-center border-b border-stone-100 text-xs transition">
+                      <span className="font-semibold text-stone-800">{col.name}</span>
+                      <span className="text-[11px] font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded border border-amber-200">PID: {col.pid}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <button onClick={exportWordDoc} className="bg-amber-800 hover:bg-amber-900 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-sm shrink-0">
+              <Download className="w-4 h-4" /> Export Institutional Report (.doc Word)
+            </button>
+          </div>
+
+          <div className="grid grid-cols-4 gap-4">
+            <div className="bg-white p-3.5 rounded-xl border border-stone-200 flex items-center gap-3 shadow-sm">
+              <FileText className="w-6 h-6 text-stone-600" />
+              <div>
+                <p className="text-[10px] text-stone-500 uppercase font-semibold">Total Complaints</p>
+                <p className="text-lg font-bold text-stone-900">{complaints.length}</p>
+              </div>
+            </div>
+            <div className="bg-white p-3.5 rounded-xl border border-stone-200 flex items-center gap-3 shadow-sm">
+              <Clock className="w-6 h-6 text-amber-600" />
+              <div>
+                <p className="text-[10px] text-stone-500 uppercase font-semibold">Pending Cases</p>
+                <p className="text-lg font-bold text-stone-900">{complaints.filter(c => c.status === 'Pending').length}</p>
+              </div>
+            </div>
+            <div className="bg-white p-3.5 rounded-xl border border-stone-200 flex items-center gap-3 shadow-sm">
+              <AlertCircle className="w-6 h-6 text-rose-600" />
+              <div>
+                <p className="text-[10px] text-stone-500 uppercase font-semibold">High / Critical Priority</p>
+                <p className="text-lg font-bold text-stone-900">{complaints.filter(c => c.priority === 'HIGH' || c.priority === 'CRITICAL').length}</p>
+              </div>
+            </div>
+            <div className="bg-white p-3.5 rounded-xl border border-stone-200 flex items-center gap-3 shadow-sm">
+              <CheckCircle className="w-6 h-6 text-emerald-600" />
+              <div>
+                <p className="text-[10px] text-stone-500 uppercase font-semibold">AI Overlaps Detected</p>
+                <p className="text-lg font-bold text-stone-900">{complaints.filter(c => c.isDuplicate).length}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {role === 'student' ? (
+        <div className="max-w-2xl mx-auto bg-white p-6 rounded-xl border border-stone-200 shadow-sm">
+          <div className="flex justify-between items-center mb-1">
+            <h2 className="text-base font-bold text-stone-900">Submit Student Grievance Portal</h2>
+            <span className="text-[11px] bg-amber-50 text-amber-800 border border-amber-200 px-2.5 py-1 rounded-lg font-medium flex items-center gap-1">
+              <Cpu className="w-3.5 h-3.5 text-amber-600" /> 24/7 AI Monitored
+            </span>
+          </div>
+          <p className="text-xs text-stone-500 mb-6">Submissions directly audited by AICTE Bureau & Anti-Ragging Cell with real-time tracking.</p>
+
+          {aiAlert && (
+            <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900">
+              {aiAlert}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmitComplaint} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 mb-1">Target College Name</label>
+                <input type="text" required value={targetInstName} onChange={(e) => setTargetInstName(e.target.value)} className="w-full bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-xs text-stone-800 focus:outline-none focus:border-amber-600" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 mb-1">AICTE Permanent ID (PID)</label>
+                <input type="text" required value={targetPid} onChange={(e) => setTargetPid(e.target.value)} className="w-full bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-xs text-stone-800 focus:outline-none focus:border-amber-600" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 mb-1">1. Bureau / Department</label>
+                <select 
+                  value={formDepartment}
+                  onChange={(e) => setFormDepartment(e.target.value)}
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-xs focus:outline-none focus:border-amber-600 text-stone-800">
+                  <option value="Anti-Ragging Cell">Anti-Ragging Cell</option>
+                  <option value="Regulation Bureau">Regulation Bureau</option>
+                  <option value="Public Grievances">Public Grievances</option>
+                  <option value="Academic Affairs">Academic Affairs</option>
+                  <option value="Other">Other (Specify Below)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 mb-1">2. Grievance Category</label>
+                <select 
+                  value={formCategory}
+                  onChange={(e) => setFormCategory(e.target.value)}
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-xs focus:outline-none focus:border-amber-600 text-stone-800">
+                  <option value="Ragging & Student Harassment">Ragging & Harassment</option>
+                  <option value="Fee Exceeding AICTE Norms">Fee Exceeding Norms</option>
+                  <option value="Infrastructure Deficit">Infrastructure Deficit</option>
+                  <option value="Faculty & Staff Dispute">Faculty Dispute</option>
+                  <option value="Other">Other (Specify Below)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 mb-1">3. Priority Level</label>
+                <select 
+                  value={formPriority}
+                  onChange={(e) => setFormPriority(e.target.value)}
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-xs focus:outline-none focus:border-amber-600 text-stone-800">
+                  <option value="CRITICAL">Critical (Immediate)</option>
+                  <option value="HIGH">High Priority</option>
+                  <option value="MEDIUM">Medium Priority</option>
+                </select>
+              </div>
+            </div>
+
+            {formDepartment === 'Other' && (
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 mb-1">Specify Custom Department / Bureau</label>
+                <input 
+                  type="text"
+                  required
+                  placeholder="Enter custom department name..."
+                  value={customOtherDepartment}
+                  onChange={(e) => setCustomOtherDepartment(e.target.value)}
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-xs text-stone-800 focus:outline-none focus:border-amber-600"
+                />
+              </div>
+            )}
+
+            {formCategory === 'Other' && (
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 mb-1">Specify Custom Grievance Category</label>
+                <input 
+                  type="text"
+                  required
+                  placeholder="Enter custom complaint category..."
+                  value={customOtherCategory}
+                  onChange={(e) => setCustomOtherCategory(e.target.value)}
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-xs text-stone-800 focus:outline-none focus:border-amber-600"
+                />
+              </div>
+            )}
+
+            <div>
+              <label className="block text-xs font-semibold text-stone-700 mb-1">Detailed Description (AI Monitored)</label>
+              <textarea 
+                rows={4}
+                required
+                value={newDesc}
+                onChange={(e) => setNewDesc(e.target.value)}
+                placeholder="Describe your grievance clearly. AI engine will check semantic duplicates & generate audit timeline..."
+                className="w-full bg-stone-50 border border-stone-200 rounded-xl p-3 text-xs focus:outline-none focus:border-amber-600 text-stone-800"
+              />
+            </div>
+
+            <button type="submit" className="w-full bg-amber-800 hover:bg-amber-900 text-white text-xs font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition shadow-sm">
+              <Send className="w-4 h-4" /> Submit & Trigger AI Surveillance
+            </button>
+          </form>
+        </div>
+      ) : (
+        <div className="grid grid-cols-12 gap-6">
+          <div className="col-span-5 bg-white p-4 rounded-xl border border-stone-200 shadow-sm">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="font-semibold text-xs uppercase tracking-wider text-stone-600 flex items-center gap-2">
+                <Filter className="w-3.5 h-3.5 text-stone-500" /> Active Cases ({filteredComplaints.length})
+              </h2>
+              <select value={selectedDept} onChange={(e) => setSelectedDept(e.target.value)} className="bg-stone-50 text-xs border border-stone-200 rounded-lg p-1.5 focus:outline-none text-stone-700">
+                <option value="All">All Bureaus</option>
+                <option value="Anti-Ragging Cell">Anti-Ragging Cell</option>
+                <option value="Regulation Bureau">Regulation Bureau</option>
+                <option value="Public Grievances">Public Grievances</option>
+              </select>
+            </div>
+
+            <div className="space-y-3 max-h-[550px] overflow-y-auto pr-1">
+              {filteredComplaints.length === 0 ? (
+                <p className="text-xs text-stone-400 text-center py-6">No complaints found matching criteria.</p>
+              ) : (
+                filteredComplaints.map((item) => (
+                  <div key={item.id} onClick={() => setSelectedCase(item)} className={`p-3 rounded-xl border cursor-pointer transition ${selectedCase?.id === item.id ? 'bg-amber-50/60 border-amber-600' : 'bg-stone-50/50 border-stone-200 hover:border-stone-300'}`}>
+                    <div className="flex justify-between items-start mb-1">
+                      <span className="text-xs font-bold text-amber-900">{item.id}</span>
+                      <div className="flex gap-1.5">
+                        <span className="text-[10px] px-2 py-0.5 rounded font-medium bg-amber-50 text-amber-800 border border-amber-200">{item.department}</span>
+                        <span className={`text-[10px] px-2 py-0.5 rounded font-semibold ${item.priority === 'CRITICAL' || item.priority === 'HIGH' ? 'bg-rose-100 text-rose-800 border border-rose-200' : 'bg-amber-100 text-amber-800'}`}>{item.priority}</span>
+                      </div>
+                    </div>
+                    <p className="text-xs font-semibold text-stone-800 truncate">{item.category}</p>
+                    <p className="text-[11px] text-stone-500 truncate mt-0.5">{item.institutionName} (PID: {item.institutionId})</p>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div className="col-span-7 bg-white p-5 rounded-xl border border-stone-200 shadow-sm">
+            {selectedCase ? (
+              <div>
+                <div className="flex justify-between items-start border-b border-stone-200 pb-4 mb-4">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs font-semibold text-amber-800">{selectedCase.institutionName} • PID: {selectedCase.institutionId}</span>
+                      <span className="text-[10px] bg-amber-100 text-amber-900 px-2 py-0.5 rounded font-bold">{selectedCase.department}</span>
+                    </div>
+                    <h2 className="text-base font-bold text-stone-900">{selectedCase.category}</h2>
+                  </div>
+                  <span className={`text-xs px-3 py-1 rounded-full font-medium border ${selectedCase.status === 'Resolved' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-stone-100 text-stone-800 border-stone-300'}`}>
+                    {selectedCase.status}
+                  </span>
+                </div>
+
+                <div className="mb-5">
+                  <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">Original Grievance Text</h3>
+                  <p className="text-xs bg-stone-50 p-3.5 rounded-xl border border-stone-200 text-stone-800 leading-relaxed">{selectedCase.description}</p>
+                </div>
+
+                <div className="mb-6 p-3.5 bg-stone-50 rounded-xl border border-stone-200">
+                  <h3 className="text-xs font-semibold text-stone-700 mb-2">{role === 'officer' ? 'Official Action / Verification Remarks' : 'Institutional Clarification Response'}</h3>
+                  <div className="flex gap-2">
+                    <input type="text" placeholder="Add official notes..." value={officerRemark} onChange={(e) => setOfficerRemark(e.target.value)} className="flex-1 bg-white border border-stone-300 rounded-xl px-3 py-2 text-xs text-stone-800 focus:outline-none focus:border-amber-600" />
+                    <button onClick={handleResolveCase} className="bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold px-4 py-2 rounded-xl transition flex items-center gap-1.5 shadow-sm">
+                      <CheckCircle className="w-3.5 h-3.5" /> Mark Resolved
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-amber-700" /> Audit Trail & Resolution Timeline
+                  </h3>
+                  <div className="space-y-3 relative pl-4 border-l-2 border-amber-300 max-h-[180px] overflow-y-auto">
+                    {selectedCase.timeline.map((log, idx) => (
+                      <div key={idx} className="relative">
+                        <div className="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-amber-600 ring-4 ring-amber-100"></div>
+                        <p className="text-xs font-semibold text-stone-800">{log.action}</p>
+                        <p className="text-[10px] text-stone-500">{log.date} • Action by <span className="text-amber-800 font-medium">{log.actor}</span></p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <p className="text-stone-400 text-sm">Select a complaint to review details.</p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
