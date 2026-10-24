@@ -72,7 +72,7 @@ const initialComplaints = [
 ];
 
 export default function OneDeskDashboard() {
-  const [currentPage, setCurrentPage] = useState('home'); // 'home' | 'login' | 'dashboard'
+  const [currentPage, setCurrentPage] = useState('home');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loginRole, setLoginRole] = useState('student');
   const [userId, setUserId] = useState('');
@@ -85,7 +85,7 @@ export default function OneDeskDashboard() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedCase, setSelectedCase] = useState(complaints[0]);
   
-  // Student Form State with 3-Level Dropdowns
+  // Student Form State
   const [targetInstName, setTargetInstName] = useState('Apex Institute of Technology');
   const [targetPid, setTargetPid] = useState('12345');
   const [formDepartment, setFormDepartment] = useState('Anti-Ragging Cell');
@@ -97,7 +97,6 @@ export default function OneDeskDashboard() {
   const [aiAlert, setAiAlert] = useState(null);
   const [officerRemark, setOfficerRemark] = useState('');
 
-  // Overall Live Metrics
   const totalCount = 1248 + complaints.length - initialComplaints.length;
   const pendingCount = 166 + complaints.filter(c => c.status === 'Pending').length - 2;
   const resolvedCount = 1082 + complaints.filter(c => c.status === 'Resolved').length - 1;
@@ -183,7 +182,7 @@ export default function OneDeskDashboard() {
     setCustomOtherCategory('');
   };
 
-  // --- PAGE 1: PUBLIC HOME PAGE ---
+  // --- PUBLIC HOME PAGE (SPECIFIC TO AICTE PS# SIH26264) ---
   if (currentPage === 'home') {
     return (
       <div className="min-h-screen bg-stone-50 text-stone-800 font-sans">
@@ -195,7 +194,7 @@ export default function OneDeskDashboard() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-stone-900 tracking-tight">AICTE OneDesk</h1>
-              <p className="text-[11px] text-stone-500">All India Council for Technical Education • Grievance Portal</p>
+              <p className="text-[11px] text-stone-500 font-semibold">AICTE PS Code: SIH26264 • Grievance Portal</p>
             </div>
           </div>
 
@@ -214,14 +213,14 @@ export default function OneDeskDashboard() {
         {/* Hero Banner Section */}
         <section className="bg-stone-900 text-white py-16 px-8 text-center relative overflow-hidden">
           <div className="max-w-4xl mx-auto relative z-10">
-            <span className="bg-amber-500/20 text-amber-300 text-xs font-semibold px-3.5 py-1.5 rounded-full border border-amber-400/30 inline-block mb-4">
-              Ministry of Education • National Technical Grievance Platform
+            <span className="bg-amber-500/20 text-amber-300 text-xs font-bold px-3.5 py-1.5 rounded-full border border-amber-400/30 inline-block mb-4">
+              AICTE PS# SIH26264 • AI-Powered OneDesk Platform
             </span>
             <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-4">
-              Centralized AI-Monitored Student Grievance & Audit System
+              Centralized AI-Monitored Student Grievance & Institutional Audit Engine
             </h2>
             <p className="text-stone-300 text-sm max-w-2xl mx-auto mb-8">
-              Automated duplicate detection, 24/7 Anti-Ragging surveillance, and transparent chronological audit logs for AICTE approved technical institutions across India.
+              AICTE approved technical education redressal framework featuring semantic duplicate detection, 24/7 Anti-Ragging surveillance, and chronological audit trail logs.
             </p>
 
             <div className="inline-flex gap-4">
@@ -239,7 +238,7 @@ export default function OneDeskDashboard() {
           </div>
         </section>
 
-        {/* Live Metrics */}
+        {/* Live Public Metrics */}
         <section className="max-w-6xl mx-auto px-6 -mt-8 relative z-20">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-lg flex items-center gap-4">
@@ -287,8 +286,8 @@ export default function OneDeskDashboard() {
         {/* Feature Grid */}
         <section className="max-w-6xl mx-auto px-6 py-16">
           <div className="text-center mb-12">
-            <h3 className="text-xl font-bold text-stone-900">Portal Core Modules</h3>
-            <p className="text-xs text-stone-500 mt-1">Robust system ensuring fast grievance redressal & 100% accountability</p>
+            <h3 className="text-xl font-bold text-stone-900">AICTE OneDesk Core Modules</h3>
+            <p className="text-xs text-stone-500 mt-1">Built specifically for Problem Statement SIH26264 requirements</p>
           </div>
 
           <div className="grid grid-cols-3 gap-6">
@@ -325,13 +324,13 @@ export default function OneDeskDashboard() {
         </section>
 
         <footer className="bg-stone-900 text-stone-400 py-6 text-center text-xs border-t border-stone-800">
-          All India Council for Technical Education • Official Portal Infrastructure
+          All India Council for Technical Education (AICTE) • Problem Statement ID: SIH26264
         </footer>
       </div>
     );
   }
 
-  // --- PAGE 2: LOGIN SCREEN ---
+  // --- LOGIN SCREEN ---
   if (currentPage === 'login') {
     return (
       <div className="min-h-screen bg-stone-100 text-stone-800 flex items-center justify-center p-4 font-sans relative">
@@ -407,7 +406,7 @@ export default function OneDeskDashboard() {
     );
   }
 
-  // --- PAGE 3: DASHBOARD VIEW ---
+  // --- DASHBOARD VIEW ---
   return (
     <div className="min-h-screen bg-stone-100 text-stone-800 font-sans p-6">
       <header className="flex justify-between items-center bg-white p-4 rounded-xl border border-stone-200 mb-6 shadow-sm">
@@ -417,7 +416,7 @@ export default function OneDeskDashboard() {
           </div>
           <div>
             <h1 className="text-lg font-bold tracking-tight text-stone-900">AICTE OneDesk</h1>
-            <p className="text-[11px] text-stone-500">Centralized Grievance Redressal & Institutional Audit Engine</p>
+            <p className="text-[11px] text-stone-500 font-semibold">PS Code: SIH26264 • Grievance Redressal Engine</p>
           </div>
         </div>
 
@@ -440,7 +439,7 @@ export default function OneDeskDashboard() {
         </div>
       </header>
 
-      {/* Main Form & Officer Panel */}
+      {/* Rest of Dashboard Interface */}
     </div>
   );
 }
