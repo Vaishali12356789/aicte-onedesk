@@ -71,47 +71,6 @@ const initialComplaints = [
       { date: "2026-10-12", action: "AI System Flagged Lab Maintenance Ticket", actor: "AI Core" },
       { date: "2026-10-18", action: "Action Taken / Resolved: 25 New Workstations installed & High-speed fiber upgraded.", actor: "Institute Admin" }
     ]
-  },
-  {
-    id: "CNT-2026-0103",
-    institutionId: "99887",
-    institutionName: "Central Institute of Science & Tech",
-    department: "Academic Affairs",
-    category: "Faculty Non-Availability",
-    description: "Mechanical Engineering department core subjects classes suspended due to unreplaced faculty resignations.",
-    status: "Resolved",
-    priority: "HIGH",
-    isDuplicate: false,
-    matchedCaseId: null,
-    similarityScore: null,
-    aiReason: null,
-    aiStatus: "Case Closed & Verified",
-    deadline: "2026-10-15",
-    timeline: [
-      { date: "2026-10-01", action: "Grievance Registered", actor: "Student" },
-      { date: "2026-10-05", action: "Interim Faculty arranged & verified by Bureau", actor: "AICTE Officer" },
-      { date: "2026-10-12", action: "Action Taken / Resolved: Permanent recruitment verification complete.", actor: "AICTE Bureau" }
-    ]
-  },
-  {
-    id: "CNT-2026-0104",
-    institutionId: "12345",
-    institutionName: "Apex Institute of Technology",
-    department: "Public Grievances",
-    category: "Other",
-    description: "Canteen food quality & hygiene conditions violating basic health guidelines leading to sickness.",
-    status: "Pending",
-    priority: "MEDIUM",
-    isDuplicate: false,
-    matchedCaseId: null,
-    similarityScore: null,
-    aiReason: null,
-    aiStatus: "AI Surveillance Active ⚡",
-    deadline: "2026-10-30",
-    timeline: [
-      { date: "2026-10-23", action: "Grievance Filed under Custom (Other) Category", actor: "Student" },
-      { date: "2026-10-23", action: "Auto-forwarded to Institutional Health Committee", actor: "AI Engine" }
-    ]
   }
 ];
 
@@ -128,13 +87,21 @@ export default function OneDeskDashboard() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedCase, setSelectedCase] = useState(complaints[0]);
   
-  // Form State
+  // Student Form State with 3-Level Dropdowns
   const [targetInstName, setTargetInstName] = useState('Apex Institute of Technology');
   const [targetPid, setTargetPid] = useState('12345');
+  
+  // Level 1: Bureau / Department
   const [formDepartment, setFormDepartment] = useState('Anti-Ragging Cell');
+  const [customOtherDepartment, setCustomOtherDepartment] = useState('');
+  
+  // Level 2: Category
   const [formCategory, setFormCategory] = useState('Ragging & Student Harassment');
   const [customOtherCategory, setCustomOtherCategory] = useState('');
+  
+  // Level 3: Priority
   const [formPriority, setFormPriority] = useState('CRITICAL');
+  
   const [newDesc, setNewDesc] = useState('');
   const [aiAlert, setAiAlert] = useState(null);
   const [officerRemark, setOfficerRemark] = useState('');
@@ -167,7 +134,6 @@ export default function OneDeskDashboard() {
   const highPriorityCount = complaints.filter(c => c.priority === 'HIGH' || c.priority === 'CRITICAL').length;
   const duplicateCount = complaints.filter(c => c.isDuplicate).length;
 
-  // OFFLINE WORD FILE (.DOC) EXPORT FUNCTION
   const exportWordDoc = () => {
     const targetData = filteredComplaints;
     let docContent = `
@@ -180,9 +146,6 @@ export default function OneDeskDashboard() {
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; font-size: 12px; }
         th { background-color: #f1f5f9; }
-        .critical { color: #dc2626; font-weight: bold; }
-        .pending { color: #d97706; font-weight: bold; }
-        .resolved { color: #16a34a; font-weight: bold; }
       </style>
       </head>
       <body>
@@ -201,23 +164,20 @@ export default function OneDeskDashboard() {
               <th>Priority</th>
               <th>Status</th>
               <th>Description</th>
-              <th>Latest Timeline Action</th>
             </tr>
           </thead>
           <tbody>
     `;
 
     targetData.forEach(c => {
-      const lastAction = c.timeline[c.timeline.length - 1];
       docContent += `
         <tr>
           <td><b>${c.id}</b></td>
           <td>${c.institutionName} (${c.institutionId})</td>
           <td>${c.department} - <i>${c.category}</i></td>
-          <td className="${c.priority === 'CRITICAL' ? 'critical' : ''}">${c.priority}</td>
-          <td className="${c.status === 'Resolved' ? 'resolved' : 'pending'}">${c.status}</td>
+          <td>${c.priority}</td>
+          <td>${c.status}</td>
           <td>${c.description}</td>
-          <td>${lastAction ? `${lastAction.date}: ${lastAction.action} (${lastAction.actor})` : 'Registered'}</td>
         </tr>
       `;
     });
@@ -229,9 +189,7 @@ export default function OneDeskDashboard() {
       </html>
     `;
 
-    const blob = new Blob(['\ufeff' + docContent], {
-      type: 'application/msword'
-    });
+    const blob = new Blob(['\ufeff' + docContent], { type: 'application/msword' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
@@ -257,14 +215,15 @@ export default function OneDeskDashboard() {
       }
     }
 
-    const finalCategory = formCategory === 'Other' ? customOtherCategory || 'Custom Other Issue' : formCategory;
+    const finalDepartment = formDepartment === 'Other' ? customOtherDepartment || 'Custom Department' : formDepartment;
+    const finalCategory = formCategory === 'Other' ? customOtherCategory || 'Custom Category' : formCategory;
     const newId = `CNT-2026-010${complaints.length + 1}`;
     
     const newEntry = {
       id: newId,
       institutionId: targetPid || "12345",
       institutionName: targetInstName || "Apex Institute of Technology",
-      department: formDepartment,
+      department: finalDepartment,
       category: finalCategory,
       description: newDesc,
       status: "Pending",
@@ -291,6 +250,7 @@ export default function OneDeskDashboard() {
     }
 
     setNewDesc('');
+    setCustomOtherDepartment('');
     setCustomOtherCategory('');
   };
 
@@ -305,11 +265,7 @@ export default function OneDeskDashboard() {
 
     const updated = complaints.map(c => {
       if (c.id === selectedCase.id) {
-        return {
-          ...c,
-          status: 'Resolved',
-          timeline: [...c.timeline, newTimelineItem]
-        };
+        return { ...c, status: 'Resolved', timeline: [...c.timeline, newTimelineItem] };
       }
       return c;
     });
@@ -336,22 +292,13 @@ export default function OneDeskDashboard() {
           </div>
 
           <div className="grid grid-cols-3 gap-1 p-1 bg-stone-100 rounded-xl border border-stone-200 mb-6 text-xs">
-            <button 
-              type="button"
-              onClick={() => setLoginRole('student')}
-              className={`py-2 font-medium rounded-lg transition flex items-center justify-center gap-1 ${loginRole === 'student' ? 'bg-white text-stone-900 shadow-sm border border-stone-200' : 'text-stone-500 hover:text-stone-800'}`}>
+            <button type="button" onClick={() => setLoginRole('student')} className={`py-2 font-medium rounded-lg transition flex items-center justify-center gap-1 ${loginRole === 'student' ? 'bg-white text-stone-900 shadow-sm border border-stone-200' : 'text-stone-500 hover:text-stone-800'}`}>
               <User className="w-3.5 h-3.5" /> Student
             </button>
-            <button 
-              type="button"
-              onClick={() => setLoginRole('institution')}
-              className={`py-2 font-medium rounded-lg transition flex items-center justify-center gap-1 ${loginRole === 'institution' ? 'bg-white text-stone-900 shadow-sm border border-stone-200' : 'text-stone-500 hover:text-stone-800'}`}>
+            <button type="button" onClick={() => setLoginRole('institution')} className={`py-2 font-medium rounded-lg transition flex items-center justify-center gap-1 ${loginRole === 'institution' ? 'bg-white text-stone-900 shadow-sm border border-stone-200' : 'text-stone-500 hover:text-stone-800'}`}>
               <Building2 className="w-3.5 h-3.5" /> Institute
             </button>
-            <button 
-              type="button"
-              onClick={() => setLoginRole('officer')}
-              className={`py-2 font-medium rounded-lg transition flex items-center justify-center gap-1 ${loginRole === 'officer' ? 'bg-white text-stone-900 shadow-sm border border-stone-200' : 'text-stone-500 hover:text-stone-800'}`}>
+            <button type="button" onClick={() => setLoginRole('officer')} className={`py-2 font-medium rounded-lg transition flex items-center justify-center gap-1 ${loginRole === 'officer' ? 'bg-white text-stone-900 shadow-sm border border-stone-200' : 'text-stone-500 hover:text-stone-800'}`}>
               <UserCheck className="w-3.5 h-3.5" /> Official
             </button>
           </div>
@@ -365,14 +312,7 @@ export default function OneDeskDashboard() {
                 <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-stone-400">
                   <UserCheck className="w-4 h-4" />
                 </span>
-                <input 
-                  type="text" 
-                  required
-                  placeholder={loginRole === 'student' ? 'STU-2026-9081' : loginRole === 'institution' ? '12345' : 'officer@aicte-india.org'}
-                  value={userId}
-                  onChange={(e) => setUserId(e.target.value)}
-                  className="w-full bg-stone-50 border border-stone-300 rounded-xl py-2.5 pl-10 pr-4 text-xs text-stone-800 focus:outline-none focus:border-amber-600 transition"
-                />
+                <input type="text" required placeholder={loginRole === 'student' ? 'STU-2026-9081' : loginRole === 'institution' ? '12345' : 'officer@aicte-india.org'} value={userId} onChange={(e) => setUserId(e.target.value)} className="w-full bg-stone-50 border border-stone-300 rounded-xl py-2.5 pl-10 pr-4 text-xs text-stone-800 focus:outline-none focus:border-amber-600 transition" />
               </div>
             </div>
 
@@ -382,14 +322,7 @@ export default function OneDeskDashboard() {
                 <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-stone-400">
                   <Key className="w-4 h-4" />
                 </span>
-                <input 
-                  type="password" 
-                  required
-                  placeholder="••••••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-stone-50 border border-stone-300 rounded-xl py-2.5 pl-10 pr-4 text-xs text-stone-800 focus:outline-none focus:border-amber-600 transition"
-                />
+                <input type="password" required placeholder="••••••••••••" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full bg-stone-50 border border-stone-300 rounded-xl py-2.5 pl-10 pr-4 text-xs text-stone-800 focus:outline-none focus:border-amber-600 transition" />
               </div>
             </div>
 
@@ -398,16 +331,10 @@ export default function OneDeskDashboard() {
               <span>Government Portal Certified 256-Bit SSL Encrypted Session</span>
             </div>
 
-            <button 
-              type="submit"
-              className="w-full bg-stone-900 hover:bg-stone-800 text-white font-semibold py-2.5 rounded-xl text-xs shadow transition">
+            <button type="submit" className="w-full bg-stone-900 hover:bg-stone-800 text-white font-semibold py-2.5 rounded-xl text-xs shadow transition">
               Access OneDesk Portal
             </button>
           </form>
-
-          <div className="mt-6 text-center text-[11px] text-stone-400">
-            All India Council for Technical Education • Official Portal
-          </div>
         </div>
       </div>
     );
@@ -438,10 +365,7 @@ export default function OneDeskDashboard() {
             </span>
           </div>
 
-          <button 
-            onClick={handleLogout}
-            title="Secure Logout"
-            className="p-2 bg-stone-100 hover:bg-stone-200 border border-stone-300 rounded-xl text-stone-700 transition">
+          <button onClick={handleLogout} className="p-2 bg-stone-100 hover:bg-stone-200 border border-stone-300 rounded-xl text-stone-700 transition">
             <LogOut className="w-4 h-4" />
           </button>
         </div>
@@ -453,17 +377,7 @@ export default function OneDeskDashboard() {
             <div className="relative flex-1">
               <div className="flex items-center gap-3">
                 <Search className="w-4 h-4 text-stone-400 shrink-0" />
-                <input 
-                  type="text"
-                  placeholder="Click to select college or type PID / Name..."
-                  value={searchPid}
-                  onFocus={() => setShowDropdown(true)}
-                  onChange={(e) => {
-                    setSearchPid(e.target.value);
-                    setShowDropdown(true);
-                  }}
-                  className="w-full text-xs bg-transparent border-none focus:outline-none text-stone-800 font-medium"
-                />
+                <input type="text" placeholder="Click to select college or type PID / Name..." value={searchPid} onFocus={() => setShowDropdown(true)} onChange={(e) => { setSearchPid(e.target.value); setShowDropdown(true); }} className="w-full text-xs bg-transparent border-none focus:outline-none text-stone-800 font-medium" />
                 <ChevronDown className="w-4 h-4 text-stone-400 cursor-pointer" onClick={() => setShowDropdown(!showDropdown)} />
                 {searchPid && (
                   <button onClick={() => { setSearchPid(''); setShowDropdown(false); }} className="text-xs text-stone-400 hover:text-stone-600">Clear</button>
@@ -476,27 +390,16 @@ export default function OneDeskDashboard() {
                     Select Registered Institution:
                   </div>
                   {collegesList.map((col) => (
-                    <div 
-                      key={col.pid}
-                      onClick={() => {
-                        setSearchPid(col.pid);
-                        setShowDropdown(false);
-                      }}
-                      className="p-2.5 hover:bg-amber-50/80 cursor-pointer flex justify-between items-center border-b border-stone-100 text-xs transition">
+                    <div key={col.pid} onClick={() => { setSearchPid(col.pid); setShowDropdown(false); }} className="p-2.5 hover:bg-amber-50/80 cursor-pointer flex justify-between items-center border-b border-stone-100 text-xs transition">
                       <span className="font-semibold text-stone-800">{col.name}</span>
-                      <span className="text-[11px] font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded border border-amber-200">
-                        PID: {col.pid}
-                      </span>
+                      <span className="text-[11px] font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded border border-amber-200">PID: {col.pid}</span>
                     </div>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* OFFLINE WORD FILE DOWNLOAD BUTTON */}
-            <button 
-              onClick={exportWordDoc}
-              className="bg-amber-800 hover:bg-amber-900 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-sm shrink-0">
+            <button onClick={exportWordDoc} className="bg-amber-800 hover:bg-amber-900 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-sm shrink-0">
               <Download className="w-4 h-4" /> Export Institutional Report (.doc Word)
             </button>
           </div>
@@ -554,28 +457,17 @@ export default function OneDeskDashboard() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-stone-700 mb-1">Target College Name</label>
-                <input 
-                  type="text"
-                  required
-                  value={targetInstName}
-                  onChange={(e) => setTargetInstName(e.target.value)}
-                  className="w-full bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-xs text-stone-800 focus:outline-none focus:border-amber-600"
-                />
+                <input type="text" required value={targetInstName} onChange={(e) => setTargetInstName(e.target.value)} className="w-full bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-xs text-stone-800 focus:outline-none focus:border-amber-600" />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-stone-700 mb-1">AICTE Permanent ID (PID)</label>
-                <input 
-                  type="text"
-                  required
-                  value={targetPid}
-                  onChange={(e) => setTargetPid(e.target.value)}
-                  className="w-full bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-xs text-stone-800 focus:outline-none focus:border-amber-600"
-                />
+                <input type="text" required value={targetPid} onChange={(e) => setTargetPid(e.target.value)} className="w-full bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-xs text-stone-800 focus:outline-none focus:border-amber-600" />
               </div>
             </div>
 
-            {/* 3 Dropdowns */}
+            {/* 3-Level Cascading Hierarchy */}
             <div className="grid grid-cols-3 gap-3">
+              {/* Level 1: Bureau / Department */}
               <div>
                 <label className="block text-xs font-semibold text-stone-700 mb-1">1. Bureau / Department</label>
                 <select 
@@ -586,9 +478,11 @@ export default function OneDeskDashboard() {
                   <option value="Regulation Bureau">Regulation Bureau</option>
                   <option value="Public Grievances">Public Grievances</option>
                   <option value="Academic Affairs">Academic Affairs</option>
+                  <option value="Other">Other (Specify Below)</option>
                 </select>
               </div>
 
+              {/* Level 2: Grievance Category */}
               <div>
                 <label className="block text-xs font-semibold text-stone-700 mb-1">2. Grievance Category</label>
                 <select 
@@ -603,8 +497,9 @@ export default function OneDeskDashboard() {
                 </select>
               </div>
 
+              {/* Level 3: Urgency / Priority */}
               <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1">3. Priority Level</label>
+                <label className="block text-xs font-semibold text-stone-700 mb-1">3. Urgency / Priority</label>
                 <select 
                   value={formPriority}
                   onChange={(e) => setFormPriority(e.target.value)}
@@ -616,10 +511,25 @@ export default function OneDeskDashboard() {
               </div>
             </div>
 
-            {/* Conditional 'Other' Custom Category Input */}
+            {/* Custom Department Input if 'Other' selected */}
+            {formDepartment === 'Other' && (
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 mb-1">Specify Custom Department / Bureau</label>
+                <input 
+                  type="text"
+                  required
+                  placeholder="Enter custom department name..."
+                  value={customOtherDepartment}
+                  onChange={(e) => setCustomOtherDepartment(e.target.value)}
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-xs text-stone-800 focus:outline-none focus:border-amber-600"
+                />
+              </div>
+            )}
+
+            {/* Custom Category Input if 'Other' selected */}
             {formCategory === 'Other' && (
               <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1">Specify Other Grievance Category</label>
+                <label className="block text-xs font-semibold text-stone-700 mb-1">Specify Custom Grievance Category</label>
                 <input 
                   type="text"
                   required
@@ -655,15 +565,11 @@ export default function OneDeskDashboard() {
               <h2 className="font-semibold text-xs uppercase tracking-wider text-stone-600 flex items-center gap-2">
                 <Filter className="w-3.5 h-3.5 text-stone-500" /> Active Cases ({filteredComplaints.length})
               </h2>
-              <select 
-                value={selectedDept} 
-                onChange={(e) => setSelectedDept(e.target.value)}
-                className="bg-stone-50 text-xs border border-stone-200 rounded-lg p-1.5 focus:outline-none text-stone-700">
+              <select value={selectedDept} onChange={(e) => setSelectedDept(e.target.value)} className="bg-stone-50 text-xs border border-stone-200 rounded-lg p-1.5 focus:outline-none text-stone-700">
                 <option value="All">All Bureaus</option>
                 <option value="Anti-Ragging Cell">Anti-Ragging Cell</option>
                 <option value="Regulation Bureau">Regulation Bureau</option>
                 <option value="Public Grievances">Public Grievances</option>
-                <option value="Academic Affairs">Academic Affairs</option>
               </select>
             </div>
 
@@ -672,35 +578,16 @@ export default function OneDeskDashboard() {
                 <p className="text-xs text-stone-400 text-center py-6">No complaints found matching criteria.</p>
               ) : (
                 filteredComplaints.map((item) => (
-                  <div 
-                    key={item.id}
-                    onClick={() => setSelectedCase(item)}
-                    className={`p-3 rounded-xl border cursor-pointer transition ${selectedCase?.id === item.id ? 'bg-amber-50/60 border-amber-600' : 'bg-stone-50/50 border-stone-200 hover:border-stone-300'}`}>
+                  <div key={item.id} onClick={() => setSelectedCase(item)} className={`p-3 rounded-xl border cursor-pointer transition ${selectedCase?.id === item.id ? 'bg-amber-50/60 border-amber-600' : 'bg-stone-50/50 border-stone-200 hover:border-stone-300'}`}>
                     <div className="flex justify-between items-start mb-1">
                       <span className="text-xs font-bold text-amber-900">{item.id}</span>
                       <div className="flex gap-1.5">
-                        <span className="text-[10px] px-2 py-0.5 rounded font-medium bg-amber-50 text-amber-800 border border-amber-200">
-                          {item.department}
-                        </span>
-                        <span className={`text-[10px] px-2 py-0.5 rounded font-semibold ${item.priority === 'CRITICAL' || item.priority === 'HIGH' ? 'bg-rose-100 text-rose-800 border border-rose-200' : 'bg-amber-100 text-amber-800'}`}>
-                          {item.priority}
-                        </span>
+                        <span className="text-[10px] px-2 py-0.5 rounded font-medium bg-amber-50 text-amber-800 border border-amber-200">{item.department}</span>
+                        <span className={`text-[10px] px-2 py-0.5 rounded font-semibold ${item.priority === 'CRITICAL' || item.priority === 'HIGH' ? 'bg-rose-100 text-rose-800 border border-rose-200' : 'bg-amber-100 text-amber-800'}`}>{item.priority}</span>
                       </div>
                     </div>
                     <p className="text-xs font-semibold text-stone-800 truncate">{item.category}</p>
                     <p className="text-[11px] text-stone-500 truncate mt-0.5">{item.institutionName} (PID: {item.institutionId})</p>
-                    
-                    <div className="mt-2 flex items-center justify-between text-[10px] text-stone-500 bg-stone-100 p-1.5 rounded-md border border-stone-200">
-                      <span className="flex items-center gap-1 text-amber-900 font-medium">
-                        <Cpu className="w-3 h-3 text-amber-600" /> {item.aiStatus || 'AI Monitored'}
-                      </span>
-                    </div>
-
-                    {item.isDuplicate && (
-                      <div className="mt-1.5 text-[10px] text-amber-800 bg-amber-100/70 p-1.5 rounded-md flex items-center gap-1 border border-amber-200">
-                        <AlertCircle className="w-3 h-3 shrink-0" /> AI Overlap Flag ({item.similarityScore})
-                      </div>
-                    )}
                   </div>
                 ))
               )}
@@ -723,55 +610,21 @@ export default function OneDeskDashboard() {
                   </span>
                 </div>
 
-                <div className="mb-4 p-3 bg-amber-50/70 border border-amber-200 rounded-xl text-xs flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-amber-900">
-                    <Cpu className="w-4 h-4 text-amber-700 animate-pulse" />
-                    <div>
-                      <strong className="block">AI Surveillance Engine Active</strong>
-                      <span className="text-[11px] text-stone-600">Complaint continuously monitored for compliance & timeline audit trail.</span>
-                    </div>
-                  </div>
-                  <span className="text-[11px] font-bold bg-white text-amber-900 px-2.5 py-1 rounded-lg border border-amber-300">
-                    {selectedCase.aiStatus}
-                  </span>
-                </div>
-
-                {selectedCase.isDuplicate && (
-                  <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-stone-700">
-                    <div className="font-bold flex items-center gap-1.5 mb-1 text-amber-900">
-                      <AlertCircle className="w-4 h-4 text-amber-700" /> AI Duplicate Analysis
-                    </div>
-                    <p>Semantic match with existing record <strong className="underline">{selectedCase.matchedCaseId}</strong> ({selectedCase.similarityScore} similarity).</p>
-                    <p className="text-[11px] text-stone-500 mt-1">Reason: {selectedCase.aiReason}</p>
-                  </div>
-                )}
-
                 <div className="mb-5">
                   <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">Original Grievance Text</h3>
                   <p className="text-xs bg-stone-50 p-3.5 rounded-xl border border-stone-200 text-stone-800 leading-relaxed">{selectedCase.description}</p>
                 </div>
 
                 <div className="mb-6 p-3.5 bg-stone-50 rounded-xl border border-stone-200">
-                  <h3 className="text-xs font-semibold text-stone-700 mb-2">
-                    {role === 'officer' ? 'Official Action / Verification Remarks' : 'Institutional Clarification Response'}
-                  </h3>
+                  <h3 className="text-xs font-semibold text-stone-700 mb-2">{role === 'officer' ? 'Official Action / Verification Remarks' : 'Institutional Clarification Response'}</h3>
                   <div className="flex gap-2">
-                    <input 
-                      type="text"
-                      placeholder="Add official notes or response text..."
-                      value={officerRemark}
-                      onChange={(e) => setOfficerRemark(e.target.value)}
-                      className="flex-1 bg-white border border-stone-300 rounded-xl px-3 py-2 text-xs text-stone-800 focus:outline-none focus:border-amber-600"
-                    />
-                    <button 
-                      onClick={handleResolveCase}
-                      className="bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold px-4 py-2 rounded-xl transition flex items-center gap-1.5 shadow-sm">
+                    <input type="text" placeholder="Add official notes..." value={officerRemark} onChange={(e) => setOfficerRemark(e.target.value)} className="flex-1 bg-white border border-stone-300 rounded-xl px-3 py-2 text-xs text-stone-800 focus:outline-none focus:border-amber-600" />
+                    <button onClick={handleResolveCase} className="bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold px-4 py-2 rounded-xl transition flex items-center gap-1.5 shadow-sm">
                       <CheckCircle className="w-3.5 h-3.5" /> Mark Resolved
                     </button>
                   </div>
                 </div>
 
-                {/* Complaint Timeline Log */}
                 <div>
                   <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                     <Clock className="w-3.5 h-3.5 text-amber-700" /> Audit Trail & Resolution Timeline
