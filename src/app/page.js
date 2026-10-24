@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { calculateSemanticOverlap } from './utils/aiEngine';
-import { Shield, Filter, Send, CheckCircle, Clock, FileText, Lock, UserCheck, Building2, User, Key, LogOut, Search, AlertCircle, ChevronDown, Cpu, Activity } from 'lucide-react';
+import { Shield, Filter, Send, CheckCircle, Clock, FileText, Lock, UserCheck, Building2, User, Key, LogOut, Search, AlertCircle, ChevronDown, Download, Activity, Cpu } from 'lucide-react';
 
 const collegesList = [
   { pid: "12345", name: "Apex Institute of Technology" },
@@ -16,19 +16,19 @@ const initialComplaints = [
     institutionName: "Apex Institute of Technology",
     department: "Anti-Ragging Cell",
     category: "Ragging & Student Harassment",
-    description: "Severe ragging and harassment reported by junior hostel residents involving senior students. Immediate intervention requested under AICTE anti-ragging protocols.",
+    description: "Senior B.Tech 3rd year students threatening & harassing 1st year hostel residents after campus hours near Hostel Block B.",
     status: "Pending",
     priority: "CRITICAL",
     isDuplicate: false,
     matchedCaseId: null,
     similarityScore: null,
     aiReason: null,
-    aiMonitored: true,
-    aiStatus: "AI Surveillance & Sentiment Active ⚡",
+    aiStatus: "AI Surveillance & Priority Active ⚡",
     deadline: "2026-10-25",
     timeline: [
-      { date: "2026-10-24", action: "Grievance Registered via Student Portal", actor: "Student" },
-      { date: "2026-10-24", action: "AI Engine Flagged Critical Priority & Notified Anti-Ragging Squad", actor: "AI Monitoring Engine" }
+      { date: "2026-10-22", action: "Grievance Registered via Student Portal", actor: "Student" },
+      { date: "2026-10-22", action: "AI Engine Flagged CRITICAL Priority & Sent Alert to Anti-Ragging Cell", actor: "AI Core" },
+      { date: "2026-10-23", action: "Anti-Ragging Squad assigned for physical site inspection", actor: "AICTE Officer" }
     ]
   },
   {
@@ -37,19 +37,18 @@ const initialComplaints = [
     institutionName: "Apex Institute of Technology",
     department: "Regulation Bureau",
     category: "Fee Exceeding AICTE Norms",
-    description: "College management is demanding mandatory development fees exceeding AICTE prescribed ceilings for B.Tech batch.",
+    description: "College management is demanding mandatory development fees of ₹45,000 exceeding AICTE prescribed ceilings for B.Tech batch.",
     status: "Pending",
     priority: "HIGH",
     isDuplicate: false,
     matchedCaseId: null,
     similarityScore: null,
     aiReason: null,
-    aiMonitored: true,
-    aiStatus: "AI Semantic Validation Passed ✓",
+    aiStatus: "AI Semantic Audit Passed ✓",
     deadline: "2026-11-05",
     timeline: [
       { date: "2026-10-20", action: "Grievance Registered", actor: "Student Portal" },
-      { date: "2026-10-20", action: "AI Duplicate Check Completed (No Overlap)", actor: "AI Engine" }
+      { date: "2026-10-21", action: "Notice issued to Institute Finance Department", actor: "AICTE Officer" }
     ]
   },
   {
@@ -58,18 +57,60 @@ const initialComplaints = [
     institutionName: "Indore College of Engineering & Tech",
     department: "Public Grievances",
     category: "Infrastructure Deficit",
-    description: "Computer science labs lack updated hardware and high-speed internet required for curriculum practical sessions.",
+    description: "Computer science labs lack working systems and high-speed internet required for curriculum practical sessions.",
+    status: "Resolved",
+    priority: "MEDIUM",
+    isDuplicate: false,
+    matchedCaseId: null,
+    similarityScore: null,
+    aiReason: null,
+    aiStatus: "Case Closed & Verified",
+    deadline: "2026-10-22",
+    timeline: [
+      { date: "2026-10-10", action: "Grievance Registered by CSE Batch", actor: "Student" },
+      { date: "2026-10-12", action: "AI System Flagged Lab Maintenance Ticket", actor: "AI Core" },
+      { date: "2026-10-18", action: "Action Taken / Resolved: 25 New Workstations installed & High-speed fiber upgraded.", actor: "Institute Admin" }
+    ]
+  },
+  {
+    id: "CNT-2026-0103",
+    institutionId: "99887",
+    institutionName: "Central Institute of Science & Tech",
+    department: "Academic Affairs",
+    category: "Faculty Non-Availability",
+    description: "Mechanical Engineering department core subjects classes suspended due to unreplaced faculty resignations.",
+    status: "Resolved",
+    priority: "HIGH",
+    isDuplicate: false,
+    matchedCaseId: null,
+    similarityScore: null,
+    aiReason: null,
+    aiStatus: "Case Closed & Verified",
+    deadline: "2026-10-15",
+    timeline: [
+      { date: "2026-10-01", action: "Grievance Registered", actor: "Student" },
+      { date: "2026-10-05", action: "Interim Faculty arranged & verified by Bureau", actor: "AICTE Officer" },
+      { date: "2026-10-12", action: "Action Taken / Resolved: Permanent recruitment verification complete.", actor: "AICTE Bureau" }
+    ]
+  },
+  {
+    id: "CNT-2026-0104",
+    institutionId: "12345",
+    institutionName: "Apex Institute of Technology",
+    department: "Public Grievances",
+    category: "Other",
+    description: "Canteen food quality & hygiene conditions violating basic health guidelines leading to sickness.",
     status: "Pending",
     priority: "MEDIUM",
     isDuplicate: false,
     matchedCaseId: null,
     similarityScore: null,
     aiReason: null,
-    aiMonitored: true,
-    aiStatus: "AI Monitoring Active",
-    deadline: "2026-11-10",
+    aiStatus: "AI Surveillance Active ⚡",
+    deadline: "2026-10-30",
     timeline: [
-      { date: "2026-10-21", action: "Grievance Registered", actor: "Student Portal" }
+      { date: "2026-10-23", action: "Grievance Filed under Custom (Other) Category", actor: "Student" },
+      { date: "2026-10-23", action: "Auto-forwarded to Institutional Health Committee", actor: "AI Engine" }
     ]
   }
 ];
@@ -87,12 +128,12 @@ export default function OneDeskDashboard() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedCase, setSelectedCase] = useState(complaints[0]);
   
-  // Student Form State with 3 Dropdowns
+  // Form State
   const [targetInstName, setTargetInstName] = useState('Apex Institute of Technology');
   const [targetPid, setTargetPid] = useState('12345');
   const [formDepartment, setFormDepartment] = useState('Anti-Ragging Cell');
   const [formCategory, setFormCategory] = useState('Ragging & Student Harassment');
-  const [otherCategoryInput, setOtherCategoryInput] = useState('');
+  const [customOtherCategory, setCustomOtherCategory] = useState('');
   const [formPriority, setFormPriority] = useState('CRITICAL');
   const [newDesc, setNewDesc] = useState('');
   const [aiAlert, setAiAlert] = useState(null);
@@ -126,6 +167,80 @@ export default function OneDeskDashboard() {
   const highPriorityCount = complaints.filter(c => c.priority === 'HIGH' || c.priority === 'CRITICAL').length;
   const duplicateCount = complaints.filter(c => c.isDuplicate).length;
 
+  // OFFLINE WORD FILE (.DOC) EXPORT FUNCTION
+  const exportWordDoc = () => {
+    const targetData = filteredComplaints;
+    let docContent = `
+      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      <head><title>AICTE OneDesk Institutional Report</title>
+      <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        h1 { color: #854d0e; text-align: center; }
+        h3 { color: #334155; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; font-size: 12px; }
+        th { background-color: #f1f5f9; }
+        .critical { color: #dc2626; font-weight: bold; }
+        .pending { color: #d97706; font-weight: bold; }
+        .resolved { color: #16a34a; font-weight: bold; }
+      </style>
+      </head>
+      <body>
+        <h1>ALL INDIA COUNCIL FOR TECHNICAL EDUCATION (AICTE)</h1>
+        <h3 style="text-align:center;">OneDesk Grievance & Audit Report - Offline Export</h3>
+        <p><strong>Export Date:</strong> ${new Date().toLocaleDateString()}</p>
+        <p><strong>Filter Applied (PID/College):</strong> ${searchPid || 'All Institutes'}</p>
+        <p><strong>Total Complaints Exported:</strong> ${targetData.length}</p>
+        <hr/>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Institute Name (PID)</th>
+              <th>Bureau/Category</th>
+              <th>Priority</th>
+              <th>Status</th>
+              <th>Description</th>
+              <th>Latest Timeline Action</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
+
+    targetData.forEach(c => {
+      const lastAction = c.timeline[c.timeline.length - 1];
+      docContent += `
+        <tr>
+          <td><b>${c.id}</b></td>
+          <td>${c.institutionName} (${c.institutionId})</td>
+          <td>${c.department} - <i>${c.category}</i></td>
+          <td className="${c.priority === 'CRITICAL' ? 'critical' : ''}">${c.priority}</td>
+          <td className="${c.status === 'Resolved' ? 'resolved' : 'pending'}">${c.status}</td>
+          <td>${c.description}</td>
+          <td>${lastAction ? `${lastAction.date}: ${lastAction.action} (${lastAction.actor})` : 'Registered'}</td>
+        </tr>
+      `;
+    });
+
+    docContent += `
+          </tbody>
+        </table>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob(['\ufeff' + docContent], {
+      type: 'application/msword'
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `AICTE_OneDesk_Report_${searchPid || 'All'}_${new Date().toISOString().slice(0,10)}.doc`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const handleSubmitComplaint = (e) => {
     e.preventDefault();
     if (!newDesc.trim()) return;
@@ -142,7 +257,7 @@ export default function OneDeskDashboard() {
       }
     }
 
-    const finalCategory = formCategory === 'Other' ? otherCategoryInput || 'Other Custom Issue' : formCategory;
+    const finalCategory = formCategory === 'Other' ? customOtherCategory || 'Custom Other Issue' : formCategory;
     const newId = `CNT-2026-010${complaints.length + 1}`;
     
     const newEntry = {
@@ -158,12 +273,11 @@ export default function OneDeskDashboard() {
       matchedCaseId: matchFound ? matchFound.id : null,
       similarityScore: highestScore ? highestScore.score : null,
       aiReason: highestScore ? highestScore.reason : null,
-      aiMonitored: true,
-      aiStatus: "AI Monitored 24/7 & Verified ⚡",
+      aiStatus: "AI Surveillance & Sentiment Active ⚡",
       deadline: "2026-11-05",
       timeline: [
         { date: new Date().toISOString().split('T')[0], action: "Grievance Filed by Student", actor: "Registered Student" },
-        { date: new Date().toISOString().split('T')[0], action: "AI Monitoring Engine active: Sentiment & Priority assigned", actor: "AI Engine" }
+        { date: new Date().toISOString().split('T')[0], action: "AI Engine Priority Classification & Overlap Scan Complete", actor: "AI Core" }
       ]
     };
 
@@ -171,13 +285,13 @@ export default function OneDeskDashboard() {
     setSelectedCase(newEntry);
     
     if (matchFound) {
-      setAiAlert(`⚠️ Overlap Flag: Duplicate grievance detected with Case #${matchFound.id} (${highestScore.score} similarity). AI monitoring linked both records.`);
+      setAiAlert(`⚠️ Overlap Flag: Duplicate grievance detected with Case #${matchFound.id} (${highestScore.score} similarity). AI linked both records.`);
     } else {
-      setAiAlert(`✅ Grievance registered successfully under ID: ${newId} with active AI surveillance.`);
+      setAiAlert(`✅ Grievance registered successfully under ID: ${newId} with active AI monitoring.`);
     }
 
     setNewDesc('');
-    setOtherCategoryInput('');
+    setCustomOtherCategory('');
   };
 
   const handleResolveCase = () => {
@@ -186,7 +300,7 @@ export default function OneDeskDashboard() {
     const newTimelineItem = {
       date: currentDate,
       action: `Action Taken / Resolved: ${officerRemark || 'Verification completed.'}`,
-      actor: role === 'officer' ? 'AICTE Officer' : 'Institute Representative'
+      actor: role === 'officer' ? 'AICTE Official' : 'Institute Admin'
     };
 
     const updated = complaints.map(c => {
@@ -218,7 +332,7 @@ export default function OneDeskDashboard() {
               <Shield className="w-8 h-8" />
             </div>
             <h1 className="text-2xl font-bold tracking-tight text-stone-900">AICTE OneDesk</h1>
-            <p className="text-xs text-stone-500 mt-1">National Technical Education Grievance & AI Monitoring Portal</p>
+            <p className="text-xs text-stone-500 mt-1">National Technical Education Grievance Portal</p>
           </div>
 
           <div className="grid grid-cols-3 gap-1 p-1 bg-stone-100 rounded-xl border border-stone-200 mb-6 text-xs">
@@ -308,16 +422,16 @@ export default function OneDeskDashboard() {
           </div>
           <div>
             <h1 className="text-lg font-bold tracking-tight text-stone-900">AICTE OneDesk</h1>
-            <p className="text-[11px] text-stone-500">Centralized Grievance Redressal & AI Monitoring Engine</p>
+            <p className="text-[11px] text-stone-500">Centralized Grievance Redressal & Institutional Audit Engine</p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
           <div className="flex items-center bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-200 text-xs font-medium text-amber-900 gap-1.5">
             <Activity className="w-3.5 h-3.5 text-amber-700 animate-pulse" />
-            <span>AI Surveillance Active</span>
+            <span>AI Monitoring Active</span>
           </div>
-          
+
           <div className="flex items-center bg-stone-100 p-1 rounded-xl border border-stone-200 text-xs font-medium text-stone-600">
             <span className="px-3 py-1 bg-white rounded-lg border border-stone-200 text-stone-900 shadow-sm">
               Role: <strong className="capitalize">{role} Mode</strong>
@@ -335,47 +449,56 @@ export default function OneDeskDashboard() {
 
       {role === 'officer' && (
         <div className="space-y-4 mb-6">
-          <div className="relative bg-white p-3.5 rounded-xl border border-stone-200 shadow-sm">
-            <div className="flex items-center gap-3">
-              <Search className="w-4 h-4 text-stone-400 shrink-0" />
-              <input 
-                type="text"
-                placeholder="Click to select college or type PID / Name..."
-                value={searchPid}
-                onFocus={() => setShowDropdown(true)}
-                onChange={(e) => {
-                  setSearchPid(e.target.value);
-                  setShowDropdown(true);
-                }}
-                className="w-full text-xs bg-transparent border-none focus:outline-none text-stone-800 font-medium"
-              />
-              <ChevronDown className="w-4 h-4 text-stone-400 cursor-pointer" onClick={() => setShowDropdown(!showDropdown)} />
-              {searchPid && (
-                <button onClick={() => { setSearchPid(''); setShowDropdown(false); }} className="text-xs text-stone-400 hover:text-stone-600">Clear</button>
+          <div className="relative bg-white p-3.5 rounded-xl border border-stone-200 shadow-sm flex items-center gap-3">
+            <div className="relative flex-1">
+              <div className="flex items-center gap-3">
+                <Search className="w-4 h-4 text-stone-400 shrink-0" />
+                <input 
+                  type="text"
+                  placeholder="Click to select college or type PID / Name..."
+                  value={searchPid}
+                  onFocus={() => setShowDropdown(true)}
+                  onChange={(e) => {
+                    setSearchPid(e.target.value);
+                    setShowDropdown(true);
+                  }}
+                  className="w-full text-xs bg-transparent border-none focus:outline-none text-stone-800 font-medium"
+                />
+                <ChevronDown className="w-4 h-4 text-stone-400 cursor-pointer" onClick={() => setShowDropdown(!showDropdown)} />
+                {searchPid && (
+                  <button onClick={() => { setSearchPid(''); setShowDropdown(false); }} className="text-xs text-stone-400 hover:text-stone-600">Clear</button>
+                )}
+              </div>
+
+              {showDropdown && (
+                <div className="absolute left-0 right-0 top-full mt-2 bg-white border border-stone-200 rounded-xl shadow-lg z-50 overflow-hidden max-h-48 overflow-y-auto">
+                  <div className="p-2 text-[10px] uppercase tracking-wider font-bold text-stone-400 bg-stone-50 border-b border-stone-100">
+                    Select Registered Institution:
+                  </div>
+                  {collegesList.map((col) => (
+                    <div 
+                      key={col.pid}
+                      onClick={() => {
+                        setSearchPid(col.pid);
+                        setShowDropdown(false);
+                      }}
+                      className="p-2.5 hover:bg-amber-50/80 cursor-pointer flex justify-between items-center border-b border-stone-100 text-xs transition">
+                      <span className="font-semibold text-stone-800">{col.name}</span>
+                      <span className="text-[11px] font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded border border-amber-200">
+                        PID: {col.pid}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
 
-            {showDropdown && (
-              <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-stone-200 rounded-xl shadow-lg z-50 overflow-hidden max-h-48 overflow-y-auto">
-                <div className="p-2 text-[10px] uppercase tracking-wider font-bold text-stone-400 bg-stone-50 border-b border-stone-100">
-                  Select Registered Institution:
-                </div>
-                {collegesList.map((col) => (
-                  <div 
-                    key={col.pid}
-                    onClick={() => {
-                      setSearchPid(col.pid);
-                      setShowDropdown(false);
-                    }}
-                    className="p-2.5 hover:bg-amber-50/80 cursor-pointer flex justify-between items-center border-b border-stone-100 text-xs transition">
-                    <span className="font-semibold text-stone-800">{col.name}</span>
-                    <span className="text-[11px] font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded border border-amber-200">
-                      PID: {col.pid}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
+            {/* OFFLINE WORD FILE DOWNLOAD BUTTON */}
+            <button 
+              onClick={exportWordDoc}
+              className="bg-amber-800 hover:bg-amber-900 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-sm shrink-0">
+              <Download className="w-4 h-4" /> Export Institutional Report (.doc Word)
+            </button>
           </div>
 
           <div className="grid grid-cols-4 gap-4">
@@ -396,7 +519,7 @@ export default function OneDeskDashboard() {
             <div className="bg-white p-3.5 rounded-xl border border-stone-200 flex items-center gap-3 shadow-sm">
               <AlertCircle className="w-6 h-6 text-rose-600" />
               <div>
-                <p className="text-[10px] text-stone-500 uppercase font-semibold">High/Critical Priority</p>
+                <p className="text-[10px] text-stone-500 uppercase font-semibold">High / Critical Priority</p>
                 <p className="text-lg font-bold text-stone-900">{highPriorityCount}</p>
               </div>
             </div>
@@ -451,10 +574,10 @@ export default function OneDeskDashboard() {
               </div>
             </div>
 
-            {/* 3 Dropdowns Required by User */}
+            {/* 3 Dropdowns */}
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1">1. Department / Bureau</label>
+                <label className="block text-xs font-semibold text-stone-700 mb-1">1. Bureau / Department</label>
                 <select 
                   value={formDepartment}
                   onChange={(e) => setFormDepartment(e.target.value)}
@@ -481,7 +604,7 @@ export default function OneDeskDashboard() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1">3. Urgency / Priority</label>
+                <label className="block text-xs font-semibold text-stone-700 mb-1">3. Priority Level</label>
                 <select 
                   value={formPriority}
                   onChange={(e) => setFormPriority(e.target.value)}
@@ -493,16 +616,16 @@ export default function OneDeskDashboard() {
               </div>
             </div>
 
-            {/* Conditional input if 'Other' category is selected */}
+            {/* Conditional 'Other' Custom Category Input */}
             {formCategory === 'Other' && (
               <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1">Specify Other Category Type</label>
+                <label className="block text-xs font-semibold text-stone-700 mb-1">Specify Other Grievance Category</label>
                 <input 
                   type="text"
                   required
-                  placeholder="Enter custom grievance category..."
-                  value={otherCategoryInput}
-                  onChange={(e) => setOtherCategoryInput(e.target.value)}
+                  placeholder="Enter custom complaint category..."
+                  value={customOtherCategory}
+                  onChange={(e) => setCustomOtherCategory(e.target.value)}
                   className="w-full bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-xs text-stone-800 focus:outline-none focus:border-amber-600"
                 />
               </div>
@@ -515,7 +638,7 @@ export default function OneDeskDashboard() {
                 required
                 value={newDesc}
                 onChange={(e) => setNewDesc(e.target.value)}
-                placeholder="Describe your issue clearly. AI Monitoring Engine will analyze sentiment, check duplicates, and track timeline automatically..."
+                placeholder="Describe your grievance clearly. AI engine will check semantic duplicates & generate audit timeline..."
                 className="w-full bg-stone-50 border border-stone-200 rounded-xl p-3 text-xs focus:outline-none focus:border-amber-600 text-stone-800"
               />
             </div>
@@ -540,6 +663,7 @@ export default function OneDeskDashboard() {
                 <option value="Anti-Ragging Cell">Anti-Ragging Cell</option>
                 <option value="Regulation Bureau">Regulation Bureau</option>
                 <option value="Public Grievances">Public Grievances</option>
+                <option value="Academic Affairs">Academic Affairs</option>
               </select>
             </div>
 
@@ -599,17 +723,16 @@ export default function OneDeskDashboard() {
                   </span>
                 </div>
 
-                {/* AI Monitoring Status Banner */}
                 <div className="mb-4 p-3 bg-amber-50/70 border border-amber-200 rounded-xl text-xs flex items-center justify-between">
                   <div className="flex items-center gap-2 text-amber-900">
                     <Cpu className="w-4 h-4 text-amber-700 animate-pulse" />
                     <div>
-                      <strong className="block">AI Surveillance & Monitoring Engine Active</strong>
-                      <span className="text-[11px] text-stone-600">Complaint continuously analyzed for compliance, sentiment urgency, and duplicate matching.</span>
+                      <strong className="block">AI Surveillance Engine Active</strong>
+                      <span className="text-[11px] text-stone-600">Complaint continuously monitored for compliance & timeline audit trail.</span>
                     </div>
                   </div>
                   <span className="text-[11px] font-bold bg-white text-amber-900 px-2.5 py-1 rounded-lg border border-amber-300">
-                    {selectedCase.aiStatus || 'Monitored'}
+                    {selectedCase.aiStatus}
                   </span>
                 </div>
 
@@ -648,17 +771,17 @@ export default function OneDeskDashboard() {
                   </div>
                 </div>
 
-                {/* Timeline Tracking Section */}
+                {/* Complaint Timeline Log */}
                 <div>
                   <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-amber-700" /> Complaint Timeline Tracking Log
+                    <Clock className="w-3.5 h-3.5 text-amber-700" /> Audit Trail & Resolution Timeline
                   </h3>
                   <div className="space-y-3 relative pl-4 border-l-2 border-amber-300 max-h-[180px] overflow-y-auto">
                     {selectedCase.timeline.map((log, idx) => (
                       <div key={idx} className="relative">
                         <div className="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-amber-600 ring-4 ring-amber-100"></div>
                         <p className="text-xs font-semibold text-stone-800">{log.action}</p>
-                        <p className="text-[10px] text-stone-500">{log.date} • Logged by <span className="text-amber-800 font-medium">{log.actor}</span></p>
+                        <p className="text-[10px] text-stone-500">{log.date} • Action by <span className="text-amber-800 font-medium">{log.actor}</span></p>
                       </div>
                     ))}
                   </div>
