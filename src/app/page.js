@@ -465,9 +465,9 @@ export default function OneDeskDashboard() {
               </div>
             </div>
 
-            {/* 3-Level Cascading Hierarchy */}
+            {/* 3 Dropdowns */}
             <div className="grid grid-cols-3 gap-3">
-              {/* Level 1: Bureau / Department */}
+              {/* Level 1: Bureau / Department Dropdown */}
               <div>
                 <label className="block text-xs font-semibold text-stone-700 mb-1">1. Bureau / Department</label>
                 <select 
@@ -482,7 +482,7 @@ export default function OneDeskDashboard() {
                 </select>
               </div>
 
-              {/* Level 2: Grievance Category */}
+              {/* Level 2: Category Dropdown */}
               <div>
                 <label className="block text-xs font-semibold text-stone-700 mb-1">2. Grievance Category</label>
                 <select 
@@ -499,7 +499,7 @@ export default function OneDeskDashboard() {
 
               {/* Level 3: Urgency / Priority */}
               <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1">3. Urgency / Priority</label>
+                <label className="block text-xs font-semibold text-stone-700 mb-1">3. Priority Level</label>
                 <select 
                   value={formPriority}
                   onChange={(e) => setFormPriority(e.target.value)}
