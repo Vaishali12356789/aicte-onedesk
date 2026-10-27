@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { calculateSemanticOverlap } from './utils/aiEngine';
-import { Shield, Filter, Send, CheckCircle, Clock, FileText, Lock, UserCheck, Building2, User, Key, LogOut, Search, AlertCircle, ChevronDown, Download, Activity, Cpu, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Shield, Filter, Send, CheckCircle, Clock, FileText, Lock, UserCheck, Building2, User, Key, LogOut, Search, AlertCircle, ChevronDown, Download, Activity, Cpu, ArrowRight, CheckCircle2, Zap, BellRing, Sparkles } from 'lucide-react';
 
 const collegesList = [
   { pid: "12345", name: "Apex Institute of Technology" },
@@ -97,6 +97,14 @@ export default function OneDeskDashboard() {
   const [aiAlert, setAiAlert] = useState(null);
   const [officerRemark, setOfficerRemark] = useState('');
 
+  // Home Page Interactive Simulation State
+  const [demoRollNo, setDemoRollNo] = useState('STU-12345');
+  const [demoComplaint, setDemoComplaint] = useState('Seniors demanding mandatory extra charges for hostel development near Block B.');
+  const [demoNotification, setDemoNotification] = useState(null);
+
+  // Live Notification Popup State (Dashboard)
+  const [notificationAlert, setNotificationAlert] = useState(null);
+
   const totalCount = 1248 + complaints.length - initialComplaints.length;
   const pendingCount = 166 + complaints.filter(c => c.status === 'Pending').length - 2;
   const resolvedCount = 1082 + complaints.filter(c => c.status === 'Resolved').length - 1;
@@ -114,6 +122,17 @@ export default function OneDeskDashboard() {
     setUserId('');
     setPassword('');
     setCurrentPage('home');
+  };
+
+  const handleRunHomeDemo = () => {
+    setDemoNotification({
+      show: true,
+      caseId: `CNT-2026-DEMO`,
+      college: "Apex Institute of Technology (PID: 12345)",
+      department: demoComplaint.toLowerCase().includes('senior') ? "Anti-Ragging Cell" : "Regulation Bureau",
+      priority: "CRITICAL",
+      smsPayload: `[AICTE DISPATCH] CRITICAL Case #CNT-2026-DEMO logged for Apex Inst of Tech. Auto-routed to Anti-Ragging Nodal Desk.`
+    });
   };
 
   const filteredComplaints = complaints.filter(c => {
@@ -240,6 +259,16 @@ export default function OneDeskDashboard() {
       setAiAlert(`✅ Grievance registered successfully under ID: ${newId}`);
     }
 
+    // Trigger Officer Notification Simulation
+    setNotificationAlert({
+      show: true,
+      caseId: newId,
+      college: targetInstName,
+      department: finalDepartment,
+      priority: formPriority,
+      smsPayload: `[AICTE DISPATCH] ${formPriority} Case #${newId} logged for ${targetInstName}. Auto-routed to ${finalDepartment} Desk.`
+    });
+
     setNewDesc('');
     setCustomOtherDepartment('');
     setCustomOtherCategory('');
@@ -270,7 +299,7 @@ export default function OneDeskDashboard() {
     setOfficerRemark('');
   };
 
-  // 1. PUBLIC HOME PAGE
+  // 1. PUBLIC HOME PAGE WITH SAMPLE DEMO BLOCK
   if (currentPage === 'home') {
     return (
       <div className="min-h-screen bg-stone-50 text-stone-800 font-sans">
@@ -324,6 +353,7 @@ export default function OneDeskDashboard() {
           </div>
         </section>
 
+        {/* Live Public Metrics */}
         <section className="max-w-6xl mx-auto px-6 -mt-8 relative z-20">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-lg flex items-center gap-4">
@@ -368,7 +398,87 @@ export default function OneDeskDashboard() {
           </div>
         </section>
 
-        <section className="max-w-6xl mx-auto px-6 py-16">
+        {/* NEW: Interactive AI Dispatch Simulation Block for Jury Presentation */}
+        <section className="max-w-6xl mx-auto px-6 pt-12">
+          <div className="bg-stone-900 text-white rounded-3xl p-8 border border-amber-500/30 shadow-2xl relative overflow-hidden">
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <span className="text-amber-400 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 mb-1">
+                  <Sparkles className="w-4 h-4" /> Live Interactive Prototype Demonstration
+                </span>
+                <h3 className="text-xl font-extrabold">Autonomous AI Nodal Routing & Instant Officer Alert</h3>
+                <p className="text-stone-400 text-xs mt-1">Test how the system automatically resolves institute data and triggers officer notification payload in real-time.</p>
+              </div>
+              <span className="bg-amber-500/20 text-amber-300 text-[10px] font-bold px-3 py-1 rounded-full border border-amber-400/30">
+                ZERO MANUAL ROUTING
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-stone-400 text-[11px] font-semibold mb-1">Sample Student Roll Number</label>
+                  <input 
+                    type="text" 
+                    value={demoRollNo} 
+                    onChange={(e) => setDemoRollNo(e.target.value)}
+                    className="w-full bg-stone-800 border border-stone-700 rounded-xl p-2.5 text-xs text-stone-200 font-bold focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-stone-400 text-[11px] font-semibold mb-1">Sample Grievance Description</label>
+                  <textarea 
+                    rows={2}
+                    value={demoComplaint}
+                    onChange={(e) => setDemoComplaint(e.target.value)}
+                    className="w-full bg-stone-800 border border-stone-700 rounded-xl p-2.5 text-xs text-stone-200 focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+                <button 
+                  onClick={handleRunHomeDemo}
+                  className="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 font-extrabold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition shadow-lg">
+                  <Zap className="w-4 h-4" /> Simulate Instant AI Dispatch Alert
+                </button>
+              </div>
+
+              {/* Demo Output Card */}
+              <div className="bg-stone-800/80 border border-stone-700 rounded-2xl p-5 text-xs">
+                {demoNotification ? (
+                  <div className="space-y-3 animate-fadeIn">
+                    <div className="flex justify-between items-center border-b border-stone-700 pb-2">
+                      <span className="text-amber-400 font-bold flex items-center gap-1.5 text-xs">
+                        <BellRing className="w-4 h-4 animate-bounce" /> DISPATCH TRIGGERED
+                      </span>
+                      <span className="text-[10px] bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded font-bold border border-rose-500/30">
+                        {demoNotification.priority}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-stone-400 text-[10px] block font-semibold">AUTO-RESOLVED COLLEGE:</span>
+                      <p className="font-bold text-stone-200">{demoNotification.college}</p>
+                    </div>
+                    <div>
+                      <span className="text-stone-400 text-[10px] block font-semibold">ASSIGNED DESK:</span>
+                      <p className="font-bold text-amber-300">{demoNotification.department}</p>
+                    </div>
+                    <div className="bg-stone-900 p-3 rounded-xl border border-stone-700 text-[10px] font-mono text-stone-300">
+                      <span className="text-amber-400 font-bold block mb-1">Live SMS Payload Sent to Officer:</span>
+                      "{demoNotification.smsPayload}"
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-stone-500">
+                    <Cpu className="w-8 h-8 mx-auto mb-2 text-stone-600 animate-pulse" />
+                    <p className="text-xs">Click "Simulate Instant AI Dispatch Alert" to test real-time officer notification payload generation.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Feature Grid */}
+        <section className="max-w-6xl mx-auto px-6 py-12">
           <div className="text-center mb-12">
             <h3 className="text-xl font-bold text-stone-900">AICTE OneDesk Core Modules</h3>
             <p className="text-xs text-stone-500 mt-1">Built specifically for Problem Statement SIH26264 requirements</p>
@@ -480,7 +590,30 @@ export default function OneDeskDashboard() {
 
   // 3. MAIN DASHBOARD VIEW
   return (
-    <div className="min-h-screen bg-stone-100 text-stone-800 font-sans p-6">
+    <div className="min-h-screen bg-stone-100 text-stone-800 font-sans p-6 relative">
+      
+      {/* Live Officer Alert Notification Toast */}
+      {notificationAlert?.show && (
+        <div className="fixed bottom-5 right-5 max-w-sm bg-stone-900 text-white p-4 rounded-2xl shadow-2xl border border-amber-500/40 z-50 animate-bounce">
+          <div className="flex justify-between items-center mb-1.5">
+            <div className="flex items-center gap-1.5 text-amber-400 font-bold text-xs">
+              <BellRing className="w-4 h-4 animate-pulse" /> OFFICER DISPATCH ALERT
+            </div>
+            <button 
+              onClick={() => setNotificationAlert(null)}
+              className="text-stone-400 hover:text-white text-xs font-bold">
+              ✕
+            </button>
+          </div>
+          <p className="text-[11px] text-stone-300 mb-2">
+            Automated notification triggered to <strong>{notificationAlert.department} Head</strong> & <strong>College Management</strong>.
+          </p>
+          <div className="bg-stone-800 p-2.5 rounded-xl border border-stone-700 text-[10px] font-mono text-stone-300">
+            <span className="text-amber-400 font-bold">SMS Payload:</span> "{notificationAlert.smsPayload}"
+          </div>
+        </div>
+      )}
+
       <header className="flex justify-between items-center bg-white p-4 rounded-xl border border-stone-200 mb-6 shadow-sm">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-amber-100 border border-amber-200 rounded-xl text-amber-900 cursor-pointer" onClick={() => setCurrentPage('home')}>
