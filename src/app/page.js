@@ -1,12 +1,12 @@
 'use client';
 import React, { useState } from 'react';
 import { calculateSemanticOverlap } from './utils/aiEngine';
-import { Shield, Filter, Send, CheckCircle, Clock, FileText, Lock, UserCheck, Building2, User, Key, LogOut, Search, AlertCircle, ChevronDown, Download, Activity, Cpu, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Shield, Filter, Send, CheckCircle, Clock, FileText, Lock, UserCheck, Building2, User, Key, LogOut, Search, AlertCircle, ChevronDown, Download, Activity, Cpu, ArrowRight, CheckCircle2, Zap, BellRing, Sparkles, PhoneCall, Mail, X, ShieldAlert, Award, GitMerge, FileSpreadsheet } from 'lucide-react';
 
 const collegesList = [
-  { pid: "12345", name: "Apex Institute of Technology" },
-  { pid: "54321", name: "Indore College of Engineering & Tech" },
-  { pid: "99887", name: "Central Institute of Science & Tech" }
+  { pid: "12345", name: "Apex Institute of Technology", riskScore: 92, grade: "A+", pendingCases: 2, status: "Compliant" },
+  { pid: "54321", name: "Indore College of Engineering & Tech", riskScore: 78, grade: "B", pendingCases: 5, status: "Moderate Risk" },
+  { pid: "99887", name: "Central Institute of Science & Tech", riskScore: 54, grade: "CRITICAL", pendingCases: 12, status: "High Audit Risk" }
 ];
 
 const initialComplaints = [
@@ -72,18 +72,16 @@ const initialComplaints = [
 ];
 
 export default function OneDeskDashboard() {
-  const [currentPage, setCurrentPage] = useState('home'); // 'home' | 'login' | 'dashboard'
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [loginRole, setLoginRole] = useState('student');
-  const [userId, setUserId] = useState('');
-  const [password, setPassword] = useState('');
-
+  const [currentPage, setCurrentPage] = useState('home'); // 'home' | 'dashboard'
   const [role, setRole] = useState('student');
   const [complaints, setComplaints] = useState(initialComplaints);
   const [selectedDept, setSelectedDept] = useState('All');
   const [searchPid, setSearchPid] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedCase, setSelectedCase] = useState(complaints[0]);
+
+  // Contact / Helpline Modal State
+  const [showHelpline, setShowHelpline] = useState(false);
   
   // Student Form State
   const [targetInstName, setTargetInstName] = useState('Apex Institute of Technology');
@@ -97,23 +95,37 @@ export default function OneDeskDashboard() {
   const [aiAlert, setAiAlert] = useState(null);
   const [officerRemark, setOfficerRemark] = useState('');
 
+  // Home Page Interactive Simulation State
+  const [demoRollNo, setDemoRollNo] = useState('STU-12345');
+  const [demoComplaint, setDemoComplaint] = useState('Seniors demanding mandatory extra charges for hostel development near Block B.');
+  const [demoNotification, setDemoNotification] = useState(null);
+
+  // Live Notification Popup State (Dashboard)
+  const [notificationAlert, setNotificationAlert] = useState(null);
+
   const totalCount = 1248 + complaints.length - initialComplaints.length;
   const pendingCount = 166 + complaints.filter(c => c.status === 'Pending').length - 2;
   const resolvedCount = 1082 + complaints.filter(c => c.status === 'Resolved').length - 1;
   const duplicateCount = 340 + complaints.filter(c => c.isDuplicate).length;
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    setIsLoggedIn(true);
-    setRole(loginRole);
+  const handleDirectLogin = (selectedRole) => {
+    setRole(selectedRole);
     setCurrentPage('dashboard');
   };
 
   const handleLogout = () => {
-    setIsLoggedIn(false);
-    setUserId('');
-    setPassword('');
     setCurrentPage('home');
+  };
+
+  const handleRunHomeDemo = () => {
+    setDemoNotification({
+      show: true,
+      caseId: `CNT-2026-DEMO`,
+      college: "Apex Institute of Technology (PID: 12345)",
+      department: demoComplaint.toLowerCase().includes('senior') ? "Anti-Ragging Cell" : "Regulation Bureau",
+      priority: "CRITICAL",
+      smsPayload: `[AICTE DISPATCH] CRITICAL Case #CNT-2026-DEMO logged for Apex Inst of Tech. Auto-routed to Anti-Ragging Nodal Desk.`
+    });
   };
 
   const filteredComplaints = complaints.filter(c => {
@@ -240,6 +252,15 @@ export default function OneDeskDashboard() {
       setAiAlert(`✅ Grievance registered successfully under ID: ${newId}`);
     }
 
+    setNotificationAlert({
+      show: true,
+      caseId: newId,
+      college: targetInstName,
+      department: finalDepartment,
+      priority: formPriority,
+      smsPayload: `[AICTE DISPATCH] ${formPriority} Case #${newId} logged for ${targetInstName}. Auto-routed to ${finalDepartment} Desk.`
+    });
+
     setNewDesc('');
     setCustomOtherDepartment('');
     setCustomOtherCategory('');
@@ -273,8 +294,58 @@ export default function OneDeskDashboard() {
   // 1. PUBLIC HOME PAGE
   if (currentPage === 'home') {
     return (
-      <div className="min-h-screen bg-stone-50 text-stone-800 font-sans">
-        <header className="bg-white border-b border-stone-200 px-8 py-4 flex justify-between items-center sticky top-0 z-50 shadow-sm">
+      <div className="min-h-screen bg-stone-50 text-stone-800 font-sans relative">
+        
+        {/* 24/7 Helpline Modal */}
+        {showHelpline && (
+          <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white max-w-md w-full rounded-2xl p-6 border border-stone-200 shadow-2xl relative">
+              <button 
+                onClick={() => setShowHelpline(false)}
+                className="absolute top-4 right-4 text-stone-400 hover:text-stone-700">
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-3 bg-amber-100 text-amber-900 rounded-xl">
+                  <PhoneCall className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-stone-900 text-base">AICTE 24/7 Helpline & Contact</h3>
+                  <p className="text-[11px] text-stone-500">Official Emergency Support Desk</p>
+                </div>
+              </div>
+
+              <div className="space-y-3 text-xs">
+                <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] uppercase text-stone-400 font-bold block">Toll-Free Anti-Ragging Helpline</span>
+                    <strong className="text-stone-800 text-sm">1800-180-5522</strong>
+                  </div>
+                  <span className="bg-rose-100 text-rose-800 text-[10px] font-bold px-2 py-0.5 rounded border border-rose-200">24/7 Live</span>
+                </div>
+
+                <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] uppercase text-stone-400 font-bold block">AICTE Central Grievance Desk</span>
+                    <strong className="text-stone-800 text-sm">011-29581000 / 011-29581050</strong>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 flex items-center gap-2">
+                  <Mail className="w-4 h-4 text-amber-700 shrink-0" />
+                  <div>
+                    <span className="text-[10px] uppercase text-stone-400 font-bold block">Official Email Dispatch</span>
+                    <strong className="text-stone-800">grievance@aicte-india.org</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Header Navigation */}
+        <header className="bg-white border-b border-stone-200 px-8 py-4 flex justify-between items-center sticky top-0 z-40 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-amber-100 border border-amber-300 rounded-xl text-amber-900">
               <Shield className="w-7 h-7" />
@@ -285,19 +356,22 @@ export default function OneDeskDashboard() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="hidden md:flex items-center gap-2 text-xs font-medium text-stone-600 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200">
-              <Activity className="w-3.5 h-3.5 text-amber-700 animate-pulse" /> AI Surveillance Active
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 text-xs font-semibold text-stone-700 bg-amber-50 px-3 py-2 rounded-xl border border-amber-200 shadow-sm">
+              <Activity className="w-4 h-4 text-amber-700 animate-pulse" />
+              <span>AI Surveillance Active</span>
             </div>
+
             <button 
-              onClick={() => setCurrentPage('login')}
-              className="bg-amber-800 hover:bg-amber-900 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-sm transition flex items-center gap-2">
-              Access Portal / Login <ArrowRight className="w-4 h-4" />
+              onClick={() => setShowHelpline(true)}
+              className="bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-sm transition flex items-center gap-1.5">
+              <PhoneCall className="w-3.5 h-3.5 text-amber-400" /> 24/7 Helpline & Contact
             </button>
           </div>
         </header>
 
-        <section className="bg-stone-900 text-white py-16 px-8 text-center relative overflow-hidden">
+        {/* Hero Banner Section */}
+        <section className="bg-stone-900 text-white py-14 px-8 text-center relative overflow-hidden">
           <div className="max-w-4xl mx-auto relative z-10">
             <span className="bg-amber-500/20 text-amber-300 text-xs font-bold px-3.5 py-1.5 rounded-full border border-amber-400/30 inline-block mb-4">
               AICTE PS# SIH26264 • AI-Powered OneDesk Platform
@@ -305,28 +379,44 @@ export default function OneDeskDashboard() {
             <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-4">
               Centralized AI-Monitored Student Grievance & Institutional Audit Engine
             </h2>
-            <p className="text-stone-300 text-sm max-w-2xl mx-auto mb-8">
+            <p className="text-stone-300 text-sm max-w-2xl mx-auto mb-6">
               AICTE approved technical education redressal framework featuring semantic duplicate detection, 24/7 Anti-Ragging surveillance, and chronological audit trail logs.
             </p>
+          </div>
+        </section>
 
-            <div className="inline-flex gap-4">
+        {/* Direct Portal Access Bar */}
+        <section className="max-w-5xl mx-auto px-6 -mt-6 relative z-30">
+          <div className="bg-white border border-amber-300 rounded-2xl p-4 shadow-xl flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-amber-100 text-amber-900 rounded-xl">
+                <Lock className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="font-bold text-stone-900 text-sm">Direct Portal Access (No Separate Login Needed)</h4>
+                <p className="text-xs text-stone-500">Select role below to enter operational dashboard directly:</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
               <button 
-                onClick={() => { setLoginRole('student'); setCurrentPage('login'); }}
-                className="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-6 py-3 rounded-xl shadow-lg transition">
-                Submit Student Grievance
+                onClick={() => handleDirectLogin('student')}
+                className="bg-amber-800 hover:bg-amber-900 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition shadow flex items-center gap-1.5">
+                <User className="w-3.5 h-3.5" /> Enter Student Desk
               </button>
               <button 
-                onClick={() => { setLoginRole('officer'); setCurrentPage('login'); }}
-                className="bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-700 font-bold text-xs px-6 py-3 rounded-xl transition">
-                AICTE Official Audit Panel
+                onClick={() => handleDirectLogin('officer')}
+                className="bg-stone-900 hover:bg-stone-800 text-stone-100 text-xs font-bold px-5 py-2.5 rounded-xl transition shadow flex items-center gap-1.5">
+                <UserCheck className="w-3.5 h-3.5 text-amber-400" /> Enter Official Audit Panel
               </button>
             </div>
           </div>
         </section>
 
-        <section className="max-w-6xl mx-auto px-6 -mt-8 relative z-20">
+        {/* Live Public Metrics */}
+        <section className="max-w-6xl mx-auto px-6 pt-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-lg flex items-center gap-4">
+            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-md flex items-center gap-4">
               <div className="p-3 bg-stone-100 rounded-xl text-stone-700">
                 <FileText className="w-7 h-7" />
               </div>
@@ -336,7 +426,7 @@ export default function OneDeskDashboard() {
               </div>
             </div>
 
-            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-lg flex items-center gap-4">
+            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-md flex items-center gap-4">
               <div className="p-3 bg-emerald-100 rounded-xl text-emerald-800">
                 <CheckCircle2 className="w-7 h-7" />
               </div>
@@ -346,7 +436,7 @@ export default function OneDeskDashboard() {
               </div>
             </div>
 
-            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-lg flex items-center gap-4">
+            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-md flex items-center gap-4">
               <div className="p-3 bg-amber-100 rounded-xl text-amber-800">
                 <Clock className="w-7 h-7" />
               </div>
@@ -356,7 +446,7 @@ export default function OneDeskDashboard() {
               </div>
             </div>
 
-            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-lg flex items-center gap-4">
+            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-md flex items-center gap-4">
               <div className="p-3 bg-rose-100 rounded-xl text-rose-800">
                 <Cpu className="w-7 h-7" />
               </div>
@@ -368,119 +458,201 @@ export default function OneDeskDashboard() {
           </div>
         </section>
 
-        <section className="max-w-6xl mx-auto px-6 py-16">
-          <div className="text-center mb-12">
-            <h3 className="text-xl font-bold text-stone-900">AICTE OneDesk Core Modules</h3>
-            <p className="text-xs text-stone-500 mt-1">Built specifically for Problem Statement SIH26264 requirements</p>
-          </div>
-
-          <div className="grid grid-cols-3 gap-6">
-            <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
-              <div className="w-10 h-10 bg-amber-100 text-amber-900 rounded-xl flex items-center justify-center font-bold mb-4">01</div>
-              <h4 className="font-bold text-stone-900 text-sm mb-2">24/7 Anti-Ragging Cell</h4>
-              <p className="text-xs text-stone-500 leading-relaxed">Instant emergency routing & high-priority escalation for confidential student harassment cases.</p>
+        {/* NEW FEATURE 1: PROTOTYPE ARCHITECTURE & WORKING FLOW DIAGRAM */}
+        <section className="max-w-6xl mx-auto px-6 pt-12">
+          <div className="bg-white rounded-3xl p-8 border border-stone-200 shadow-lg">
+            <div className="text-center mb-8">
+              <span className="text-amber-800 bg-amber-100 text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                System Workflow & Architecture
+              </span>
+              <h3 className="text-xl font-extrabold text-stone-900 mt-2">How AICTE OneDesk Operates End-to-End</h3>
+              <p className="text-xs text-stone-500 mt-1">Autonomous 4-stage pipeline replacing legacy manual complaint routing</p>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
-              <div className="w-10 h-10 bg-amber-100 text-amber-900 rounded-xl flex items-center justify-center font-bold mb-4">02</div>
-              <h4 className="font-bold text-stone-900 text-sm mb-2">AI Duplicate Scan</h4>
-              <p className="text-xs text-stone-500 leading-relaxed">NLP semantic analysis clusters similar complaints across campuses to eliminate duplicate backlogs.</p>
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 relative">
+              <div className="bg-stone-50 p-5 rounded-2xl border border-stone-200 text-center relative">
+                <div className="w-10 h-10 bg-amber-800 text-white rounded-xl flex items-center justify-center font-bold text-sm mx-auto mb-3 shadow">1</div>
+                <h4 className="font-bold text-xs text-stone-900 mb-1">Multi-Channel Intake</h4>
+                <p className="text-[11px] text-stone-500">Student files grievance via Portal with auto PID resolution & Whistleblower Shield.</p>
+              </div>
 
-            <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
-              <div className="w-10 h-10 bg-amber-100 text-amber-900 rounded-xl flex items-center justify-center font-bold mb-4">03</div>
-              <h4 className="font-bold text-stone-900 text-sm mb-2">Audit Trail Logs</h4>
-              <p className="text-xs text-stone-500 leading-relaxed">Clear timestamped timeline for every registered issue ensuring complete administrative transparency.</p>
+              <div className="bg-stone-50 p-5 rounded-2xl border border-stone-200 text-center relative">
+                <div className="w-10 h-10 bg-amber-800 text-white rounded-xl flex items-center justify-center font-bold text-sm mx-auto mb-3 shadow">2</div>
+                <h4 className="font-bold text-xs text-stone-900 mb-1">AI Semantic Audit</h4>
+                <p className="text-[11px] text-stone-500">NLP engine detects duplicate backlogs & assigns CRITICAL/HIGH priority score.</p>
+              </div>
+
+              <div className="bg-stone-50 p-5 rounded-2xl border border-stone-200 text-center relative">
+                <div className="w-10 h-10 bg-amber-800 text-white rounded-xl flex items-center justify-center font-bold text-sm mx-auto mb-3 shadow">3</div>
+                <h4 className="font-bold text-xs text-stone-900 mb-1">Instant Nodal Dispatch</h4>
+                <p className="text-[11px] text-stone-500">Zero-manual routing triggers real-time SMS payload to assigned Bureau Officials.</p>
+              </div>
+
+              <div className="bg-stone-50 p-5 rounded-2xl border border-stone-200 text-center relative">
+                <div className="w-10 h-10 bg-amber-800 text-white rounded-xl flex items-center justify-center font-bold text-sm mx-auto mb-3 shadow">4</div>
+                <h4 className="font-bold text-xs text-stone-900 mb-1">Immutable Audit Trail</h4>
+                <p className="text-[11px] text-stone-500">Chronological logs tracked till proof-of-action resolution by AICTE Officials.</p>
+              </div>
             </div>
           </div>
         </section>
 
-        <footer className="bg-stone-900 text-stone-400 py-6 text-center text-xs border-t border-stone-800">
+        {/* NEW FEATURE 2: LIVE INSTITUTIONAL HEALTH CARD & RISK INDEX BOARD */}
+        <section className="max-w-6xl mx-auto px-6 pt-10">
+          <div className="bg-stone-900 text-white rounded-3xl p-8 border border-amber-500/30 shadow-2xl">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <span className="text-amber-400 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 mb-1">
+                  <Award className="w-4 h-4" /> AI AICTE Institutional Health Cards
+                </span>
+                <h3 className="text-xl font-extrabold">Live Compliance Risk Index Dashboard</h3>
+                <p className="text-stone-400 text-xs mt-1">Real-time AI health rating calculated based on grievance density & SLA resolution velocity.</p>
+              </div>
+              <span className="bg-amber-500/20 text-amber-300 text-[10px] font-bold px-3 py-1 rounded-full border border-amber-400/30">
+                LIVE AUDIT ENGINE
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {collegesList.map((inst) => (
+                <div key={inst.pid} className="bg-stone-800/90 border border-stone-700 p-5 rounded-2xl relative overflow-hidden">
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <h4 className="font-bold text-xs text-stone-100">{inst.name}</h4>
+                      <p className="text-[10px] text-stone-400 font-mono">PID: {inst.pid}</p>
+                    </div>
+                    <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${inst.grade === 'A+' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : inst.grade === 'B' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'}`}>
+                      Grade {inst.grade}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-end mt-4 pt-3 border-t border-stone-700">
+                    <div>
+                      <span className="text-[10px] text-stone-400 block font-semibold uppercase">Compliance Score</span>
+                      <strong className="text-lg text-amber-400">{inst.riskScore}/100</strong>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] text-stone-400 block font-semibold uppercase">Pending Backlog</span>
+                      <strong className="text-xs text-stone-200">{inst.pendingCases} Cases</strong>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Interactive AI Dispatch Simulation Block */}
+        <section className="max-w-6xl mx-auto px-6 pt-10">
+          <div className="bg-stone-900 text-white rounded-3xl p-8 border border-amber-500/30 shadow-2xl relative overflow-hidden">
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <span className="text-amber-400 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 mb-1">
+                  <Sparkles className="w-4 h-4" /> Live Interactive Prototype Demonstration
+                </span>
+                <h3 className="text-xl font-extrabold">Autonomous AI Nodal Routing & Instant Officer Alert</h3>
+                <p className="text-stone-400 text-xs mt-1">Test how the system automatically resolves institute data and triggers officer notification payload in real-time.</p>
+              </div>
+              <span className="bg-amber-500/20 text-amber-300 text-[10px] font-bold px-3 py-1 rounded-full border border-amber-400/30">
+                ZERO MANUAL ROUTING
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-stone-400 text-[11px] font-semibold mb-1">Sample Student Roll Number</label>
+                  <input 
+                    type="text" 
+                    value={demoRollNo} 
+                    onChange={(e) => setDemoRollNo(e.target.value)}
+                    className="w-full bg-stone-800 border border-stone-700 rounded-xl p-2.5 text-xs text-stone-200 font-bold focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-stone-400 text-[11px] font-semibold mb-1">Sample Grievance Description</label>
+                  <textarea 
+                    rows={2}
+                    value={demoComplaint}
+                    onChange={(e) => setDemoComplaint(e.target.value)}
+                    className="w-full bg-stone-800 border border-stone-700 rounded-xl p-2.5 text-xs text-stone-200 focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+                <button 
+                  onClick={handleRunHomeDemo}
+                  className="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 font-extrabold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition shadow-lg">
+                  <Zap className="w-4 h-4" /> Simulate Instant AI Dispatch Alert
+                </button>
+              </div>
+
+              <div className="bg-stone-800/80 border border-stone-700 rounded-2xl p-5 text-xs">
+                {demoNotification ? (
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center border-b border-stone-700 pb-2">
+                      <span className="text-amber-400 font-bold flex items-center gap-1.5 text-xs">
+                        <BellRing className="w-4 h-4 animate-bounce" /> DISPATCH TRIGGERED
+                      </span>
+                      <span className="text-[10px] bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded font-bold border border-rose-500/30">
+                        {demoNotification.priority}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-stone-400 text-[10px] block font-semibold">AUTO-RESOLVED COLLEGE:</span>
+                      <p className="font-bold text-stone-200">{demoNotification.college}</p>
+                    </div>
+                    <div>
+                      <span className="text-stone-400 text-[10px] block font-semibold">ASSIGNED DESK:</span>
+                      <p className="font-bold text-amber-300">{demoNotification.department}</p>
+                    </div>
+                    <div className="bg-stone-900 p-3 rounded-xl border border-stone-700 text-[10px] font-mono text-stone-300">
+                      <span className="text-amber-400 font-bold block mb-1">Live SMS Payload Sent to Officer:</span>
+                      "{demoNotification.smsPayload}"
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-stone-500">
+                    <Cpu className="w-8 h-8 mx-auto mb-2 text-stone-600 animate-pulse" />
+                    <p className="text-xs">Click "Simulate Instant AI Dispatch Alert" to test real-time officer notification payload generation.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <footer className="bg-stone-900 text-stone-400 py-6 text-center text-xs border-t border-stone-800 mt-12">
           All India Council for Technical Education (AICTE) • Problem Statement ID: SIH26264
         </footer>
       </div>
     );
   }
 
-  // 2. LOGIN SCREEN
-  if (currentPage === 'login') {
-    return (
-      <div className="min-h-screen bg-stone-100 text-stone-800 flex items-center justify-center p-4 font-sans relative">
-        <button 
-          onClick={() => setCurrentPage('home')}
-          className="absolute top-6 left-6 text-xs font-bold text-stone-600 bg-white px-4 py-2 rounded-xl border border-stone-300 shadow-sm hover:bg-stone-50 transition">
-          ← Back to Home
-        </button>
-
-        <div className="max-w-md w-full bg-white border border-stone-300 rounded-2xl p-8 shadow-xl relative">
-          <div className="text-center mb-8">
-            <div className="inline-flex p-3 bg-amber-100 border border-amber-300 rounded-xl text-amber-800 mb-3">
-              <Shield className="w-8 h-8" />
-            </div>
-            <h1 className="text-2xl font-bold tracking-tight text-stone-900">AICTE OneDesk</h1>
-            <p className="text-xs text-stone-500 mt-1">Select Role & Access Portal Account</p>
-          </div>
-
-          <div className="grid grid-cols-3 gap-1 p-1 bg-stone-100 rounded-xl border border-stone-200 mb-6 text-xs">
-            <button 
-              type="button" 
-              onClick={() => setLoginRole('student')} 
-              className={`py-2 font-medium rounded-lg transition flex items-center justify-center gap-1 ${loginRole === 'student' ? 'bg-white text-stone-900 shadow-sm border border-stone-200' : 'text-stone-500 hover:text-stone-800'}`}>
-              <User className="w-3.5 h-3.5" /> Student
-            </button>
-            <button 
-              type="button" 
-              onClick={() => setLoginRole('institution')} 
-              className={`py-2 font-medium rounded-lg transition flex items-center justify-center gap-1 ${loginRole === 'institution' ? 'bg-white text-stone-900 shadow-sm border border-stone-200' : 'text-stone-500 hover:text-stone-800'}`}>
-              <Building2 className="w-3.5 h-3.5" /> Institute
-            </button>
-            <button 
-              type="button" 
-              onClick={() => setLoginRole('officer')} 
-              className={`py-2 font-medium rounded-lg transition flex items-center justify-center gap-1 ${loginRole === 'officer' ? 'bg-white text-stone-900 shadow-sm border border-stone-200' : 'text-stone-500 hover:text-stone-800'}`}>
-              <UserCheck className="w-3.5 h-3.5" /> Official
-            </button>
-          </div>
-
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-stone-700 mb-1">
-                {loginRole === 'student' ? 'Student Registration / Roll No' : loginRole === 'institution' ? 'Institute PID (Permanent ID)' : 'Official AICTE Credentials'}
-              </label>
-              <input 
-                type="text" 
-                required 
-                placeholder={loginRole === 'student' ? 'STU-2026-9081' : loginRole === 'institution' ? '12345' : 'officer@aicte-india.org'} 
-                value={userId} 
-                onChange={(e) => setUserId(e.target.value)} 
-                className="w-full bg-stone-50 border border-stone-300 rounded-xl py-2.5 px-4 text-xs text-stone-800 focus:outline-none focus:border-amber-600" 
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-stone-700 mb-1">Password / Security Access Key</label>
-              <input 
-                type="password" 
-                required 
-                placeholder="••••••••••••" 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
-                className="w-full bg-stone-50 border border-stone-300 rounded-xl py-2.5 px-4 text-xs text-stone-800 focus:outline-none focus:border-amber-600" 
-              />
-            </div>
-
-            <button type="submit" className="w-full bg-stone-900 hover:bg-stone-800 text-white font-semibold py-2.5 rounded-xl text-xs shadow transition">
-              Access OneDesk Portal
-            </button>
-          </form>
-        </div>
-      </div>
-    );
-  }
-
-  // 3. MAIN DASHBOARD VIEW
+  // 2. MAIN DASHBOARD VIEW
   return (
-    <div className="min-h-screen bg-stone-100 text-stone-800 font-sans p-6">
+    <div className="min-h-screen bg-stone-100 text-stone-800 font-sans p-6 relative">
+      
+      {/* Live Officer Alert Notification Toast */}
+      {notificationAlert?.show && (
+        <div className="fixed bottom-5 right-5 max-w-sm bg-stone-900 text-white p-4 rounded-2xl shadow-2xl border border-amber-500/40 z-50 animate-bounce">
+          <div className="flex justify-between items-center mb-1.5">
+            <div className="flex items-center gap-1.5 text-amber-400 font-bold text-xs">
+              <BellRing className="w-4 h-4 animate-pulse" /> OFFICER DISPATCH ALERT
+            </div>
+            <button 
+              onClick={() => setNotificationAlert(null)}
+              className="text-stone-400 hover:text-white text-xs font-bold">
+              ✕
+            </button>
+          </div>
+          <p className="text-[11px] text-stone-300 mb-2">
+            Automated notification triggered to <strong>{notificationAlert.department} Head</strong> & <strong>College Management</strong>.
+          </p>
+          <div className="bg-stone-800 p-2.5 rounded-xl border border-stone-700 text-[10px] font-mono text-stone-300">
+            <span className="text-amber-400 font-bold">SMS Payload:</span> "{notificationAlert.smsPayload}"
+          </div>
+        </div>
+      )}
+
       <header className="flex justify-between items-center bg-white p-4 rounded-xl border border-stone-200 mb-6 shadow-sm">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-amber-100 border border-amber-200 rounded-xl text-amber-900 cursor-pointer" onClick={() => setCurrentPage('home')}>
