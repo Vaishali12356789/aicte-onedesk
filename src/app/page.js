@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { calculateSemanticOverlap } from './utils/aiEngine';
-import { Shield, Filter, Send, CheckCircle, Clock, FileText, Lock, UserCheck, Building2, User, Key, LogOut, Search, AlertCircle, ChevronDown, Download, Activity, Cpu, ArrowRight, CheckCircle2, Zap, BellRing, Sparkles, PhoneCall, Mail, X, ShieldAlert, Award, GitMerge, FileSpreadsheet } from 'lucide-react';
+import { Shield, Filter, Send, CheckCircle, Clock, FileText, Lock, UserCheck, Building2, User, Key, LogOut, Search, AlertCircle, ChevronDown, Download, Activity, Cpu, ArrowRight, CheckCircle2, Zap, BellRing, Sparkles, PhoneCall, Mail, X, Award, ShieldAlert } from 'lucide-react';
 
 const collegesList = [
   { pid: "12345", name: "Apex Institute of Technology", riskScore: 92, grade: "A+", pendingCases: 2, status: "Compliant" },
@@ -72,7 +72,12 @@ const initialComplaints = [
 ];
 
 export default function OneDeskDashboard() {
-  const [currentPage, setCurrentPage] = useState('home'); // 'home' | 'dashboard'
+  const [currentPage, setCurrentPage] = useState('home'); // 'home' | 'login' | 'dashboard'
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loginRole, setLoginRole] = useState('student');
+  const [userId, setUserId] = useState('');
+  const [password, setPassword] = useState('');
+
   const [role, setRole] = useState('student');
   const [complaints, setComplaints] = useState(initialComplaints);
   const [selectedDept, setSelectedDept] = useState('All');
@@ -108,12 +113,17 @@ export default function OneDeskDashboard() {
   const resolvedCount = 1082 + complaints.filter(c => c.status === 'Resolved').length - 1;
   const duplicateCount = 340 + complaints.filter(c => c.isDuplicate).length;
 
-  const handleDirectLogin = (selectedRole) => {
-    setRole(selectedRole);
+  const handleLogin = (e) => {
+    e.preventDefault();
+    setIsLoggedIn(true);
+    setRole(loginRole);
     setCurrentPage('dashboard');
   };
 
   const handleLogout = () => {
+    setIsLoggedIn(false);
+    setUserId('');
+    setPassword('');
     setCurrentPage('home');
   };
 
@@ -364,8 +374,14 @@ export default function OneDeskDashboard() {
 
             <button 
               onClick={() => setShowHelpline(true)}
-              className="bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-sm transition flex items-center gap-1.5">
-              <PhoneCall className="w-3.5 h-3.5 text-amber-400" /> 24/7 Helpline & Contact
+              className="bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-bold px-3.5 py-2 rounded-xl border border-stone-300 transition flex items-center gap-1.5">
+              <PhoneCall className="w-3.5 h-3.5 text-amber-700" /> 24/7 Helpline
+            </button>
+
+            <button 
+              onClick={() => setCurrentPage('login')}
+              className="bg-amber-800 hover:bg-amber-900 text-white text-xs font-bold px-5 py-2 rounded-xl shadow-sm transition flex items-center gap-2">
+              Access Portal / Login <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         </header>
@@ -379,42 +395,27 @@ export default function OneDeskDashboard() {
             <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-4">
               Centralized AI-Monitored Student Grievance & Institutional Audit Engine
             </h2>
-            <p className="text-stone-300 text-sm max-w-2xl mx-auto mb-6">
+            <p className="text-stone-300 text-sm max-w-2xl mx-auto mb-8">
               AICTE approved technical education redressal framework featuring semantic duplicate detection, 24/7 Anti-Ragging surveillance, and chronological audit trail logs.
             </p>
-          </div>
-        </section>
 
-        {/* Direct Portal Access Bar */}
-        <section className="max-w-5xl mx-auto px-6 -mt-6 relative z-30">
-          <div className="bg-white border border-amber-300 rounded-2xl p-4 shadow-xl flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-amber-100 text-amber-900 rounded-xl">
-                <Lock className="w-5 h-5" />
-              </div>
-              <div>
-                <h4 className="font-bold text-stone-900 text-sm">Direct Portal Access (No Separate Login Needed)</h4>
-                <p className="text-xs text-stone-500">Select role below to enter operational dashboard directly:</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
+            <div className="inline-flex gap-4">
               <button 
-                onClick={() => handleDirectLogin('student')}
-                className="bg-amber-800 hover:bg-amber-900 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition shadow flex items-center gap-1.5">
-                <User className="w-3.5 h-3.5" /> Enter Student Desk
+                onClick={() => { setLoginRole('student'); setCurrentPage('login'); }}
+                className="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-6 py-3 rounded-xl shadow-lg transition flex items-center gap-2">
+                <User className="w-4 h-4" /> Submit Student Grievance
               </button>
               <button 
-                onClick={() => handleDirectLogin('officer')}
-                className="bg-stone-900 hover:bg-stone-800 text-stone-100 text-xs font-bold px-5 py-2.5 rounded-xl transition shadow flex items-center gap-1.5">
-                <UserCheck className="w-3.5 h-3.5 text-amber-400" /> Enter Official Audit Panel
+                onClick={() => { setLoginRole('officer'); setCurrentPage('login'); }}
+                className="bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-700 font-bold text-xs px-6 py-3 rounded-xl transition flex items-center gap-2">
+                <UserCheck className="w-4 h-4 text-amber-400" /> AICTE Official Audit Panel
               </button>
             </div>
           </div>
         </section>
 
         {/* Live Public Metrics */}
-        <section className="max-w-6xl mx-auto px-6 pt-8">
+        <section className="max-w-6xl mx-auto px-6 -mt-8 relative z-20">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-md flex items-center gap-4">
               <div className="p-3 bg-stone-100 rounded-xl text-stone-700">
@@ -458,7 +459,7 @@ export default function OneDeskDashboard() {
           </div>
         </section>
 
-        {/* NEW FEATURE 1: PROTOTYPE ARCHITECTURE & WORKING FLOW DIAGRAM */}
+        {/* PROTOTYPE ARCHITECTURE & WORKING FLOW DIAGRAM ON HOME PAGE */}
         <section className="max-w-6xl mx-auto px-6 pt-12">
           <div className="bg-white rounded-3xl p-8 border border-stone-200 shadow-lg">
             <div className="text-center mb-8">
@@ -493,51 +494,6 @@ export default function OneDeskDashboard() {
                 <h4 className="font-bold text-xs text-stone-900 mb-1">Immutable Audit Trail</h4>
                 <p className="text-[11px] text-stone-500">Chronological logs tracked till proof-of-action resolution by AICTE Officials.</p>
               </div>
-            </div>
-          </div>
-        </section>
-
-        {/* NEW FEATURE 2: LIVE INSTITUTIONAL HEALTH CARD & RISK INDEX BOARD */}
-        <section className="max-w-6xl mx-auto px-6 pt-10">
-          <div className="bg-stone-900 text-white rounded-3xl p-8 border border-amber-500/30 shadow-2xl">
-            <div className="flex justify-between items-center mb-6">
-              <div>
-                <span className="text-amber-400 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 mb-1">
-                  <Award className="w-4 h-4" /> AI AICTE Institutional Health Cards
-                </span>
-                <h3 className="text-xl font-extrabold">Live Compliance Risk Index Dashboard</h3>
-                <p className="text-stone-400 text-xs mt-1">Real-time AI health rating calculated based on grievance density & SLA resolution velocity.</p>
-              </div>
-              <span className="bg-amber-500/20 text-amber-300 text-[10px] font-bold px-3 py-1 rounded-full border border-amber-400/30">
-                LIVE AUDIT ENGINE
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {collegesList.map((inst) => (
-                <div key={inst.pid} className="bg-stone-800/90 border border-stone-700 p-5 rounded-2xl relative overflow-hidden">
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <h4 className="font-bold text-xs text-stone-100">{inst.name}</h4>
-                      <p className="text-[10px] text-stone-400 font-mono">PID: {inst.pid}</p>
-                    </div>
-                    <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${inst.grade === 'A+' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : inst.grade === 'B' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'}`}>
-                      Grade {inst.grade}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between items-end mt-4 pt-3 border-t border-stone-700">
-                    <div>
-                      <span className="text-[10px] text-stone-400 block font-semibold uppercase">Compliance Score</span>
-                      <strong className="text-lg text-amber-400">{inst.riskScore}/100</strong>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-[10px] text-stone-400 block font-semibold uppercase">Pending Backlog</span>
-                      <strong className="text-xs text-stone-200">{inst.pendingCases} Cases</strong>
-                    </div>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         </section>
@@ -627,7 +583,83 @@ export default function OneDeskDashboard() {
     );
   }
 
-  // 2. MAIN DASHBOARD VIEW
+  // 2. LOGIN SCREEN (UNCHANGED AS REQUESTED)
+  if (currentPage === 'login') {
+    return (
+      <div className="min-h-screen bg-stone-100 text-stone-800 flex items-center justify-center p-4 font-sans relative">
+        <button 
+          onClick={() => setCurrentPage('home')}
+          className="absolute top-6 left-6 text-xs font-bold text-stone-600 bg-white px-4 py-2 rounded-xl border border-stone-300 shadow-sm hover:bg-stone-50 transition">
+          ← Back to Home
+        </button>
+
+        <div className="max-w-md w-full bg-white border border-stone-300 rounded-2xl p-8 shadow-xl relative">
+          <div className="text-center mb-8">
+            <div className="inline-flex p-3 bg-amber-100 border border-amber-300 rounded-xl text-amber-800 mb-3">
+              <Shield className="w-8 h-8" />
+            </div>
+            <h1 className="text-2xl font-bold tracking-tight text-stone-900">AICTE OneDesk</h1>
+            <p className="text-xs text-stone-500 mt-1">Select Role & Access Portal Account</p>
+          </div>
+
+          <div className="grid grid-cols-3 gap-1 p-1 bg-stone-100 rounded-xl border border-stone-200 mb-6 text-xs">
+            <button 
+              type="button" 
+              onClick={() => setLoginRole('student')} 
+              className={`py-2 font-medium rounded-lg transition flex items-center justify-center gap-1 ${loginRole === 'student' ? 'bg-white text-stone-900 shadow-sm border border-stone-200' : 'text-stone-500 hover:text-stone-800'}`}>
+              <User className="w-3.5 h-3.5" /> Student
+            </button>
+            <button 
+              type="button" 
+              onClick={() => setLoginRole('institution')} 
+              className={`py-2 font-medium rounded-lg transition flex items-center justify-center gap-1 ${loginRole === 'institution' ? 'bg-white text-stone-900 shadow-sm border border-stone-200' : 'text-stone-500 hover:text-stone-800'}`}>
+              <Building2 className="w-3.5 h-3.5" /> Institute
+            </button>
+            <button 
+              type="button" 
+              onClick={() => setLoginRole('officer')} 
+              className={`py-2 font-medium rounded-lg transition flex items-center justify-center gap-1 ${loginRole === 'officer' ? 'bg-white text-stone-900 shadow-sm border border-stone-200' : 'text-stone-500 hover:text-stone-800'}`}>
+              <UserCheck className="w-3.5 h-3.5" /> Official
+            </button>
+          </div>
+
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-stone-700 mb-1">
+                {loginRole === 'student' ? 'Student Registration / Roll No' : loginRole === 'institution' ? 'Institute PID (Permanent ID)' : 'Official AICTE Credentials'}
+              </label>
+              <input 
+                type="text" 
+                required 
+                placeholder={loginRole === 'student' ? 'STU-2026-9081' : loginRole === 'institution' ? '12345' : 'officer@aicte-india.org'} 
+                value={userId} 
+                onChange={(e) => setUserId(e.target.value)} 
+                className="w-full bg-stone-50 border border-stone-300 rounded-xl py-2.5 px-4 text-xs text-stone-800 focus:outline-none focus:border-amber-600" 
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-stone-700 mb-1">Password / Security Access Key</label>
+              <input 
+                type="password" 
+                required 
+                placeholder="••••••••••••" 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)} 
+                className="w-full bg-stone-50 border border-stone-300 rounded-xl py-2.5 px-4 text-xs text-stone-800 focus:outline-none focus:border-amber-600" 
+              />
+            </div>
+
+            <button type="submit" className="w-full bg-stone-900 hover:bg-stone-800 text-white font-semibold py-2.5 rounded-xl text-xs shadow transition">
+              Access OneDesk Portal
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  // 3. MAIN DASHBOARD VIEW
   return (
     <div className="min-h-screen bg-stone-100 text-stone-800 font-sans p-6 relative">
       
@@ -714,6 +746,37 @@ export default function OneDeskDashboard() {
             <button onClick={exportWordDoc} className="bg-amber-800 hover:bg-amber-900 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-sm shrink-0">
               <Download className="w-4 h-4" /> Export Institutional Report (.doc Word)
             </button>
+          </div>
+
+          {/* AI INSTITUTIONAL HEALTH CARD BOARD IN OFFICER PANEL */}
+          <div className="bg-stone-900 text-white p-5 rounded-2xl border border-stone-800 shadow-md">
+            <div className="flex justify-between items-center mb-3">
+              <div className="flex items-center gap-2">
+                <Award className="w-5 h-5 text-amber-400" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-stone-200">AI Institutional Risk & Health Index Board</h3>
+              </div>
+              <span className="text-[10px] text-amber-300 bg-amber-500/20 px-2.5 py-0.5 rounded-full font-bold border border-amber-500/30">Auto Audit Active</span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              {collegesList.map((inst) => (
+                <div 
+                  key={inst.pid} 
+                  onClick={() => setSearchPid(inst.pid)}
+                  className={`p-3 rounded-xl border cursor-pointer transition ${searchPid === inst.pid ? 'bg-stone-800 border-amber-500 ring-2 ring-amber-500/20' : 'bg-stone-800/60 border-stone-700 hover:border-stone-600'}`}>
+                  <div className="flex justify-between items-start mb-1.5">
+                    <span className="text-xs font-bold text-stone-100 truncate max-w-[170px]">{inst.name}</span>
+                    <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded ${inst.grade === 'A+' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : inst.grade === 'B' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'}`}>
+                      {inst.grade}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-[11px] text-stone-400 mt-2">
+                    <span>PID: {inst.pid}</span>
+                    <span className="text-amber-400 font-bold">Health Score: {inst.riskScore}/100</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className="grid grid-cols-4 gap-4">
