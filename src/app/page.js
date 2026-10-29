@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { calculateSemanticOverlap } from './utils/aiEngine';
-import { Shield, Filter, Send, CheckCircle, Clock, FileText, Lock, UserCheck, Building2, User, Key, LogOut, Search, AlertCircle, ChevronDown, Download, Activity, Cpu, ArrowRight, CheckCircle2, Zap, BellRing } from 'lucide-react';
+import { Shield, Filter, Send, CheckCircle, Clock, FileText, Lock, UserCheck, Building2, User, Key, LogOut, Search, AlertCircle, ChevronDown, Download, Activity, Cpu, ArrowRight, CheckCircle2 } from 'lucide-react';
 
 const collegesList = [
   { pid: "12345", name: "Apex Institute of Technology" },
@@ -96,9 +96,6 @@ export default function OneDeskDashboard() {
   const [newDesc, setNewDesc] = useState('');
   const [aiAlert, setAiAlert] = useState(null);
   const [officerRemark, setOfficerRemark] = useState('');
-
-  // Live Notification Popup State
-  const [notificationAlert, setNotificationAlert] = useState(null);
 
   const totalCount = 1248 + complaints.length - initialComplaints.length;
   const pendingCount = 166 + complaints.filter(c => c.status === 'Pending').length - 2;
@@ -242,16 +239,6 @@ export default function OneDeskDashboard() {
     } else {
       setAiAlert(`✅ Grievance registered successfully under ID: ${newId}`);
     }
-
-    // Trigger Officer Notification Simulation
-    setNotificationAlert({
-      show: true,
-      caseId: newId,
-      college: targetInstName,
-      department: finalDepartment,
-      priority: formPriority,
-      smsPayload: `[AICTE DISPATCH] ${formPriority} Case #${newId} logged for ${targetInstName}. Auto-routed to ${finalDepartment} Desk.`
-    });
 
     setNewDesc('');
     setCustomOtherDepartment('');
@@ -493,30 +480,7 @@ export default function OneDeskDashboard() {
 
   // 3. MAIN DASHBOARD VIEW
   return (
-    <div className="min-h-screen bg-stone-100 text-stone-800 font-sans p-6 relative">
-      
-      {/* Live Officer Alert Notification Toast */}
-      {notificationAlert?.show && (
-        <div className="fixed bottom-5 right-5 max-w-sm bg-stone-900 text-white p-4 rounded-2xl shadow-2xl border border-amber-500/40 z-50 animate-bounce">
-          <div className="flex justify-between items-center mb-1.5">
-            <div className="flex items-center gap-1.5 text-amber-400 font-bold text-xs">
-              <BellRing className="w-4 h-4 animate-pulse" /> OFFICER DISPATCH ALERT
-            </div>
-            <button 
-              onClick={() => setNotificationAlert(null)}
-              className="text-stone-400 hover:text-white text-xs font-bold">
-              ✕
-            </button>
-          </div>
-          <p className="text-[11px] text-stone-300 mb-2">
-            Automated notification triggered to <strong>{notificationAlert.department} Head</strong> & <strong>College Management</strong>.
-          </p>
-          <div className="bg-stone-800 p-2.5 rounded-xl border border-stone-700 text-[10px] font-mono text-stone-300">
-            <span className="text-amber-400 font-bold">SMS Payload:</span> "{notificationAlert.smsPayload}"
-          </div>
-        </div>
-      )}
-
+    <div className="min-h-screen bg-stone-100 text-stone-800 font-sans p-6">
       <header className="flex justify-between items-center bg-white p-4 rounded-xl border border-stone-200 mb-6 shadow-sm">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-amber-100 border border-amber-200 rounded-xl text-amber-900 cursor-pointer" onClick={() => setCurrentPage('home')}>
